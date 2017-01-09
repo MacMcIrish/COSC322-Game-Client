@@ -15,12 +15,13 @@ public class COSC322Test extends GamePlayer{
 
     private String userName = null;
 
-
     /**
      * @param args
      */
     public static void main(String[] args) {
-        COSC322Test player_01 = new COSC322Test(args[0], args[1]);
+        String username = "User";
+        String pwd = "Pwd";
+        COSC322Test player_01 = new COSC322Test(username, pwd);
     }
 
     /**
@@ -31,6 +32,11 @@ public class COSC322Test extends GamePlayer{
     public COSC322Test(String userName, String passwd) {
         this.userName = userName;
         gameClient = new GameClient(userName, passwd, this);
+
+        System.out.println(gameClient.getRoomList().size() + " rooms available");
+        for (String room : gameClient.getRoomList()){
+            System.out.println(room);
+        }
     }
 
 
