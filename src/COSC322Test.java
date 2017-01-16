@@ -32,11 +32,6 @@ public class COSC322Test extends GamePlayer{
     public COSC322Test(String userName, String passwd) {
         this.userName = userName;
         gameClient = new GameClient(userName, passwd, this);
-
-        System.out.println(gameClient.getRoomList().size() + " rooms available");
-        for (String room : gameClient.getRoomList()){
-            System.out.println(room);
-        }
     }
 
 
@@ -56,6 +51,10 @@ public class COSC322Test extends GamePlayer{
     @Override
     public void onLogin() {
         System.out.println("I am called because the server said I am logged in successfully");
+        System.out.println("Rooms available: " + gameClient.getRoomList().size());
+        for (String room : gameClient.getRoomList()){
+            System.out.println(room);
+        }
     }
 
 }
