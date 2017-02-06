@@ -15,9 +15,9 @@ import java.util.*;
  */
 public class AmazonBoard {
 
-    int minX = 0;
+    int minX = 0;   // N = maxX - minX - 1
     int maxX = 11;
-    int minY = 0;
+    int minY = 0; //N = maxY - minY - 1
     int maxY = 11;
 
     AmazonSquare[][] board = new AmazonSquare[maxY + 1][maxX + 1];
@@ -50,6 +50,10 @@ public class AmazonBoard {
         blackPieces.add(setSquare(maxX - 4, maxY - 1, AmazonSquare.PIECETYPE_AMAZON_BLACK));
         blackPieces.add(setSquare(maxX - 1, maxY - 4, AmazonSquare.PIECETYPE_AMAZON_BLACK));
 
+
+        long time = System.currentTimeMillis();
+
+
         System.out.println(this.toString());
 
         moveAmazon(1, 4, 1, 6);
@@ -70,6 +74,9 @@ public class AmazonBoard {
 
         System.out.println("White score: " + score[0] + ", Black score: " + score[1]);
 
+        time = System.currentTimeMillis() - time;
+
+        System.out.println("Milliseconds: " + time);
 
     }
 
@@ -172,7 +179,7 @@ public class AmazonBoard {
      * TODO: Move this to an evaluation class
      *
      * @param posX  The x-position of the square being checked
-     * @param posY  The y-postion of the square being checked
+     * @param posY  The y-position of the square being checked
      * @param moveX The amount to increment X when checking
      * @param moveY The amount to increment Y when checking
      * @return A list of available moves in the form of arrays as [X,Y]
@@ -250,7 +257,7 @@ public class AmazonBoard {
 
         //System.out.println(Arrays.toString(moves.toArray()));
 
-        return moves.contains(getSquare(sFinal.getPosX(), sFinal.getPosY()));
+        return moves.contains(sFinal);
 
     }
 
@@ -377,7 +384,7 @@ public class AmazonBoard {
      * Calculates the minimum distances between all squares and the closest amazon on a particular team
      * TODO: Move this to evaluation class
      * TODO: Make this actually efficient
-     * TODO: Use different variable for queenOrKing - is not particularly helpful
+     * TODO: Use different variable for queenOrKing - is not particularly descriptive or helpful
      *
      * @param color   The color of player in which to calculate min distances from
      * @param queenOrKing The max step size for movement (10 for queen, 1 for king)
@@ -392,9 +399,9 @@ public class AmazonBoard {
 
         list.addAll(generateListOfValidMoves(color, queenOrKing));
 
-        for (int n = 1; n <= 100; n++) {
+        for (int n = 1; n <= (maxX*maxY); n++) { // maxX * maxY is the theoretical max moves, but will never actually be hit
 
-            Iterator<AmazonSquare> iterator = list.iterator();
+            Iterator<AmazonSquare> iterator = list.iterator(); // Have to use an iterator, since you can't add/remove from a list in a for loop
 
             while (iterator.hasNext()) {
 
@@ -402,12 +409,12 @@ public class AmazonBoard {
 
                //System.out.println("Square (" + s.getPosX() + ", " + s.getPosY() + ") distance = " + s.getDistance(color, queenOrKing) + " vs " + n);
 
-                if (s.getDistance(color, queenOrKing) > n) {
-                    s.setDistance(color, n, queenOrKing);
-                    tempList.addAll(generateListOfValidMoves(s, queenOrKing));
+                if (s.getDistance(color, queenOrKing) > n) { //if the square has a higher distance than is being checked
+                    s.setDistance(color, n, queenOrKing);    // then set to the new distance
+                    tempList.addAll(generateListOfValidMoves(s, queenOrKing)); // and add all of the possible moves from the square
                 }
 
-                iterator.remove();
+                iterator.remove(); //remove the square that was just checked from the set
             }
 
             list.addAll(tempList);
@@ -415,7 +422,7 @@ public class AmazonBoard {
 
            // System.out.println("Calculate Distance: List length = " + list.size());
 
-            if (list.size() == 0) break;
+            if (list.size() == 0) break; //once all squares are at the minimum possible distance, exit
 
         }
     }
@@ -432,13 +439,18 @@ public class AmazonBoard {
 
     /**
      * Run only after calculateDistances has been run, otherwise all squares will show as captured
-     * TODO: Haven't actually tested this yet
+     *  If distance = Max_int, then a particular color isn't able to reach that square, meaning the square is
+     *  captured, and we don't need to do anything to it anymore
+     *
+     *  TODO: Haven't actually tested this yet
      */
     public void calculateCapturedSquares() {
 
         for (int x = minX; x <= maxX; x++)
             for (int y = minY; y <= maxY; y++)
-                if (getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) == Integer.MAX_VALUE || getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK) == Integer.MAX_VALUE)
+
+                if (getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) == Integer.MAX_VALUE
+                        || getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK) == Integer.MAX_VALUE)
                     getSquare(x, y).setCaptured(true);
     }
 
@@ -580,7 +592,7 @@ public class AmazonBoard {
                 switch(getSquare(x, y).getPieceType()) {
                     case AmazonSquare.PIECETYPE_AVAILABLE:
                         int distance = getSquare(x, y).getQueenDistance(color);
-                        s += Math.min(9, distance);
+                        s += (Integer.toHexString(Math.min(15, distance))).toUpperCase();
                         break;
             default:
                         s += "X";
@@ -614,7 +626,7 @@ public class AmazonBoard {
                 switch (getSquare(x, y).getPieceType()) {
                     case AmazonSquare.PIECETYPE_AVAILABLE:
                         int distance = getSquare(x, y).getKingDistance(color);
-                        s += Math.min(9, distance);
+                        s += (Integer.toHexString(Math.min(15, distance))).toUpperCase();
                         break;
                     default:
                         s += "X";

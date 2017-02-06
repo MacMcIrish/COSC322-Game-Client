@@ -16,7 +16,7 @@ public class AmazonSquare {
     public static final int PIECETYPE_AMAZON_BLACK = 2;
     public static final int PIECETYPE_ARROW = 3;
 
-    public static final int DISTANCE_QUEEN = 10;
+    public static final int DISTANCE_QUEEN = 100;
     public static final int DISTANCE_KING = 1;
 
 
@@ -102,7 +102,7 @@ public class AmazonSquare {
 
     public void resetDistances() {
 
-        int reset = 100;//Integer.MAX_VALUE;
+        int reset = Integer.MAX_VALUE;
 
         setQueenDistance(PIECETYPE_AMAZON_WHITE, reset);
         setQueenDistance(PIECETYPE_AMAZON_BLACK, reset);
