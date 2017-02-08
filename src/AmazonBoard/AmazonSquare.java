@@ -7,7 +7,7 @@ public class AmazonSquare {
 
     private int posX, posY, squareStrength = 0, pieceType = 0, dis;
 
-    private int distanceQueenWhite, distanceQueenBlack, distanceKingWhite, distanceKingBlack;
+    private int distanceQueenWhite, distanceQueenBlack, distanceKingWhite, distanceKingBlack, mobility = 0;
 
     private boolean captured, counted;
 
@@ -134,4 +134,14 @@ public class AmazonSquare {
     public void setCaptured(boolean captured) {
         this.captured = captured;
     }
+
+
+    public int getMobility() {
+        return mobility;
+    }
+
+    public void setMobility(int mobility) {
+        this.mobility = mobility;
+    }
+
 }

@@ -68,8 +68,8 @@ public class AmazonBoard {
         System.out.println(this.toString());
 
         generateStrengthValues();
-
         calculateDistances();
+        generateMobilityValues();
 
         System.out.println(this.toString());
 
@@ -77,9 +77,6 @@ public class AmazonBoard {
 
         System.out.println("White score: " + score[0] + ", Black score: " + score[1]);
 
-        for(AmazonSquare amazon : whitePieces) {
-            System.out.println("Mobility for (" + amazon.getPosX() + " , " + amazon.getPosY() + "): " + calculateMobility(amazon));
-        }
 
         time = System.currentTimeMillis() - time;
 
@@ -534,9 +531,9 @@ public class AmazonBoard {
      * @param amazon The queen in which to check
      * @return The mobility value
      */
-    public double calculateMobility(AmazonSquare amazon) {
+    public int calculateSquareMobility(AmazonSquare amazon) {
 
-        assert (whitePieces.contains(amazon) || blackPieces.contains(amazon));
+        //assert (whitePieces.contains(amazon) || blackPieces.contains(amazon));
 
         double mobility = 0;
         ArrayList<AmazonSquare> list;
@@ -548,9 +545,27 @@ public class AmazonBoard {
                     mobility += (list.get(i).getSquareStrength() / (Math.pow(2, i)));
             }
 
-            return mobility;
+            return (int) mobility;
     }
 
+    /**
+     * Iterates through the board and calculates the mobility scores for each square     *
+     * TODO: Should combine this with the strength calculation
+     */
+    public void generateMobilityValues() {
+
+        //don't iterate the outer perimeter
+        for (int x = minX+1; x <= maxX-1; x++)
+            for (int y = minY+1; y <= maxY-1; y++) {
+
+                if (getSquare(x, y).getPieceType() == AmazonSquare.PIECETYPE_ARROW) //ignore arrow squares
+                    getSquare(x, y).setMobility(0);
+                else
+                    getSquare(x, y).setMobility(calculateSquareMobility(getSquare(x, y)));
+
+                System.out.println("Mobility for (" + x + " , " + y + "): " + getSquare(x, y).getMobility());
+            }
+    }
 
     /**
      * Creates a ASCII representation of the piece types on the board
@@ -675,6 +690,34 @@ public class AmazonBoard {
     }
 
     /**
+     * Creates a Hex version of the mobility value, scaled based on the max mobility value: (value/maxvalue)*15
+     * TODO: Create an extended hex system to have a better range
+     *
+     * @return The ASCII representation of the mobility values for each square
+     */
+    public String getMobilityString() {
+
+        List<AmazonSquare> list = getListOfSquares();
+        int max = 0;
+
+        for (AmazonSquare s : list) if (s.getMobility() > max) max = s.getMobility();
+
+        String s = "";
+
+        for (int y = maxY; y >= minY; y--) { //needs to create s from top to bottom
+            for (int x = minX; x <= maxX; x++) {
+                double val = ((double)getSquare(x, y).getMobility()/(max+1))*16; //put max+1 to avoid divide by zero error
+                s += Integer.toHexString(Math.min((int)val,15)).toUpperCase();
+            }
+            s += "\n";
+        }
+
+        return s;
+
+    }
+
+
+    /**
      * Prints a ASCII version of the board to the console
      */
     public String toString() {
@@ -685,12 +728,14 @@ public class AmazonBoard {
         String[] blackQueenDistance = getQueenDistanceString(AmazonSquare.PIECETYPE_AMAZON_BLACK).split("\n");
         String[] whiteKingDistance = getKingDistanceString(AmazonSquare.PIECETYPE_AMAZON_WHITE).split("\n");
         String[] blackKingDistance = getKingDistanceString(AmazonSquare.PIECETYPE_AMAZON_BLACK).split("\n");
+        String[] mobilityValue = getMobilityString().split("\n");
 
-        String s = "Piece types:   Strength:      White Q Dis:   Black Q Dis:   White K Dis:   Black K Dis:" + "\n";
+        String s = "Piece types:   Strength:      Mobility:      White Q Dis:   Black Q Dis:   White K Dis:   Black K Dis:   " + "\n";
 
         for (int i = 0; i <= maxY; i++)
             s += (pieceTypes[i] + "   " +
                     strengthValues[i] + "   " +
+                    mobilityValue[i]  + "   " +
                     whiteQueenDistance[i] + "   " +
                     blackQueenDistance[i] + "   " +
                     whiteKingDistance[i] + "   " +
