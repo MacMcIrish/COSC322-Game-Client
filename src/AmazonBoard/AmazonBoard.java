@@ -15,9 +15,10 @@ import java.util.*;
  */
 public class AmazonBoard {
 
+    //For NxM board:
     int minX = 0;   // N = maxX - minX - 1
     int maxX = 11;
-    int minY = 0; //N = maxY - minY - 1
+    int minY = 0;   // M = maxY - minY - 1
     int maxY = 11;
 
     AmazonSquare[][] board = new AmazonSquare[maxY + 1][maxX + 1];
@@ -60,7 +61,9 @@ public class AmazonBoard {
 
         System.out.println(this.toString());
 
-        shootArrow(4, 1, 4, 6);
+        shootArrow(1, 6, 2, 6);
+        shootArrow(1, 6, 2, 7);
+        shootArrow(1, 6, 2, 5);
 
         System.out.println(this.toString());
 
@@ -73,6 +76,10 @@ public class AmazonBoard {
         int[] score = calculateScore();
 
         System.out.println("White score: " + score[0] + ", Black score: " + score[1]);
+
+        for(AmazonSquare amazon : whitePieces) {
+            System.out.println("Mobility for (" + amazon.getPosX() + " , " + amazon.getPosY() + "): " + calculateMobility(amazon));
+        }
 
         time = System.currentTimeMillis() - time;
 
@@ -108,7 +115,7 @@ public class AmazonBoard {
      * @return A list of available squares
      */
     private Set<AmazonSquare> generateListOfValidMoves(int color) {
-        return generateListOfValidMoves(color, 10);
+        return generateListOfValidMoves(color, maxX);
     }
 
     /**
@@ -144,7 +151,7 @@ public class AmazonBoard {
      */
     private ArrayList<AmazonSquare> generateListOfValidMoves(AmazonSquare square) {
 
-        return generateListOfValidMoves(square, 10);
+        return generateListOfValidMoves(square, maxX);
     }
 
     /**
@@ -417,7 +424,7 @@ public class AmazonBoard {
                 iterator.remove(); //remove the square that was just checked from the set
             }
 
-            list.addAll(tempList);
+            list.addAll(tempList); //add all of the new squares, if any
             tempList.clear();
 
            // System.out.println("Calculate Distance: List length = " + list.size());
@@ -516,6 +523,34 @@ public class AmazonBoard {
         return new int[]{whiteScore, blackScore};
 
     }
+
+    /**
+     * Calculates mobility of a queen, defined as the
+     * As per An evaluation function for the game of amazons by Jens Lieberum:
+     * http://ac.els-cdn.com/S0304397505005979/1-s2.0-S0304397505005979-main.pdf?_tid=d829bf2c-edc3-11e6-9fba-00000aab0f27&acdnat=1486533788_fbd052d744bf4a318972608ab142ac17
+     *
+     * For the length of each queens move, it calculates the (square strength) / 2^(kings move distance) and sums it to get mobility
+     *
+     * @param amazon The queen in which to check
+     * @return The mobility value
+     */
+    public double calculateMobility(AmazonSquare amazon) {
+
+        assert (whitePieces.contains(amazon) || blackPieces.contains(amazon));
+
+        double mobility = 0;
+        ArrayList<AmazonSquare> list;
+
+        for (int moveX = -1; moveX <= 1; moveX++)
+            for (int moveY = -1; moveY <= 1; moveY++) {
+                list = checkLineOfMoves(amazon.getPosX(), amazon.getPosY(), moveX, moveY, maxX);
+                for (int i = 0; i < list.size(); i++)
+                    mobility += (list.get(i).getSquareStrength() / (Math.pow(2, i)));
+            }
+
+            return mobility;
+    }
+
 
     /**
      * Creates a ASCII representation of the piece types on the board
@@ -638,7 +673,6 @@ public class AmazonBoard {
 
         return s;
     }
-
 
     /**
      * Prints a ASCII version of the board to the console
