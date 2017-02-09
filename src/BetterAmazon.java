@@ -14,6 +14,7 @@ import javax.swing.Box;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import AmazonBoard.*;
+import AmazonUI.*;
 import ygraphs.ai.smart_fox.GameMessage;
 
 /**
@@ -36,10 +37,11 @@ public class BetterAmazon extends GamePlayer{
     public BetterAmazon(String name, String passwd){
 
         this.usrName = name;
-        setupGUI();
+       // setupGUI();
 
-        connectToServer(name, passwd);
+        //connectToServer(name, passwd);
 
+        AmazonUI amazonUI = new AmazonUI();
         AmazonBoard board = new AmazonBoard();
 
     }

@@ -221,7 +221,7 @@ public class AmazonBoard {
      * @param yPos The y position of the square to get
      * @return The string representing the selected position
      */
-    private AmazonSquare getSquare(int xPos, int yPos) {
+    public AmazonSquare getSquare(int xPos, int yPos) {
 
         //TODO: remove assertions
         assert xPos >= minX;
@@ -715,7 +715,6 @@ public class AmazonBoard {
         return s;
 
     }
-
 
     /**
      * Prints a ASCII version of the board to the console

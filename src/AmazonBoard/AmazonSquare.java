@@ -5,7 +5,7 @@ package AmazonBoard;
  */
 public class AmazonSquare {
 
-    private int posX, posY, squareStrength = 0, pieceType = 0, dis;
+    private int posX, posY, squareStrength = 0, pieceType = 0;
 
     private int distanceQueenWhite, distanceQueenBlack, distanceKingWhite, distanceKingBlack, mobility = 0;
 
@@ -54,12 +54,30 @@ public class AmazonSquare {
         this.posY = posY;
     }
 
+
+    public int getWhiteQueenDistance() {
+        return getQueenDistance(PIECETYPE_AMAZON_WHITE);
+    }
+
+    public int getBlackQueenDistance() {
+        return getQueenDistance(PIECETYPE_AMAZON_BLACK);
+    }
+
     public int getQueenDistance(int color) {
 
         if (color == PIECETYPE_AMAZON_WHITE) return distanceQueenWhite;
         if (color == PIECETYPE_AMAZON_BLACK) return distanceQueenBlack;
 
         return Integer.MAX_VALUE;
+    }
+
+    //TODO: remove once I figure out lambdas more
+    public int getWhiteKingDistance() {
+        return getKingDistance(PIECETYPE_AMAZON_WHITE);
+    }
+
+    public int getBlackKingDistance() {
+        return getKingDistance(PIECETYPE_AMAZON_BLACK);
     }
 
     public int getKingDistance(int color) {
