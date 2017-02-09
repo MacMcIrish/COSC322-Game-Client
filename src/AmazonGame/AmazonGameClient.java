@@ -35,5 +35,4 @@ public class AmazonGameClient extends GameClient {
 
         sendMoveMessage(qf, qn, ar);
     }
-
 }

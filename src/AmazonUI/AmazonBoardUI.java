@@ -1,8 +1,7 @@
 package AmazonUI;
 
 import AmazonBoard.*;
-import ygraphs.ai.smart_fox.games.Amazon;
-import ygraphs.ai.smart_fox.games.BetterAmazon;
+import AmazonGame.AmazonGame;
 import ygraphs.ai.smart_fox.games.BoardGameModel;
 
 import javax.imageio.ImageIO;
@@ -23,29 +22,30 @@ public class AmazonBoardUI extends JLayeredPane {
 
     AmazonBoard board;
 
+    private AmazonGame game;
+
     private static final long serialVersionUID = 1L;
     private int rows = 10;  //TODO: have these taken from the gameboard
     private int cols = 10;
 
-    int width = 900;
-    int height = 900;
+    int width = 700;
+    int height = 700;
     int cellDim = width / 10;
     int offset = 0;//width / 20;
 
-    int posX = -1;
-    int posY = -1;
-
-    int r = 0;
-    int c = 0;
-
     Image iconQueenWhite = null, iconQueenBlack = null, iconArrow = null, iconTransparent = null;
 
-    Amazon game = null;
     private BoardGameModel gameModel = null;
 
     boolean playerAMove;
 
-    public AmazonBoardUI() {
+    /**
+     * Creates the game board on the left of the screen
+     * @param game The AmazonGame
+     */
+    public AmazonBoardUI(AmazonGame game) {
+
+        this.game = game;
 
         setPreferredSize(new Dimension(width, height));
 
@@ -54,17 +54,15 @@ public class AmazonBoardUI extends JLayeredPane {
 
         board = new AmazonBoard();
 
-        setLayout(new BorderLayout());
-
         boardUI.setBounds(0, 0, width + 1, height + 1);
-        heatMapUI.setBounds(0, 0, width + 1, height + 1);
+        heatMapUI.setBounds(0, 0, width + 1, height + 1 + 50);
 
         add(boardUI);
         add(heatMapUI);
         setLayer(heatMapUI, 0);
         setLayer(boardUI, 3);
 
-       // heatMapUI.setFunction(AmazonSquare::getSquareStrength);
+        // heatMapUI.setFunction(AmazonSquare::getSquareStrength);
 
     }
 
@@ -79,7 +77,7 @@ public class AmazonBoardUI extends JLayeredPane {
      * @param posX The x value of the board (for 10x10, range is 1-10)
      * @return The pixel x coordinate
      */
-    private int getPanelXcoord(int posX) {
+    private int panel2pixelX(int posX) {
         return (posX - 1) * getCellDim() + getOffset();
     }
 
@@ -89,9 +87,28 @@ public class AmazonBoardUI extends JLayeredPane {
      * @param posY The y value of the board (for 10x10, range is 1-10)
      * @return The pixel y coordinate
      */
-    private int getPanelYcoord(int posY) {
+    private int panel2pixelY(int posY) {
         return (9 - posY + 1) * getCellDim() + getOffset();
     }
+
+    /**
+     * Converts a mouse click point to a particular square on the game board
+     * @param pixelX The x pixel value of a mouse click
+     * @return The x coord of the square being clicked (1-10)
+     */
+    private int pixel2panelX(int pixelX) {
+        return (pixelX - getOffset()) / getCellDim() + 1;
+    }
+
+    /**
+     * Converts a mouse click point to a particular square on the game board
+     * @param pixelY The y pixel value of a mouse click
+     * @return The y coord of the square being clicked (1-10)
+     */
+    private int pixel2panelY(int pixelY) {
+        return 9 - (pixelY - getOffset()) / getCellDim() + 1;
+    }
+
 
     private int getCellDim() {
         return cellDim;
@@ -111,7 +128,7 @@ public class AmazonBoardUI extends JLayeredPane {
             //    addMouseListener(new Amazon.GameBoard.GameEventHandler());
             //}
 
-
+            addMouseListener(new GameEventHandler());
             loadImages();
         }
 
@@ -152,12 +169,13 @@ public class AmazonBoardUI extends JLayeredPane {
 
             for (int x = minX; x <= maxX; x++)
                 for (int y = minY; y <= maxY; y++)
-                    g.drawImage(getIcon(getBoard().getSquare(x, y)), getPanelXcoord(x), getPanelYcoord(y), getCellDim(), getCellDim(), this);
+                    g.drawImage(getIcon(getBoard().getSquare(x, y)), panel2pixelX(x), panel2pixelY(y), getCellDim(), getCellDim(), this);
 
         }
 
         /**
          * Get the particular icon for a square
+         * Needs to have called loadImages() for anything to display
          *
          * @param square The square to get the icon for
          * @return An image of the type of square
@@ -176,7 +194,7 @@ public class AmazonBoardUI extends JLayeredPane {
         }
 
         /**
-         * Paints the grid on the board         *
+         * Paints the grid on the board
          *
          * @param g The graphic for the board
          */
@@ -191,18 +209,38 @@ public class AmazonBoardUI extends JLayeredPane {
                 g.drawLine(getOffset(), i * getCellDim() + getOffset(), cols * getCellDim() + getOffset(), i * getCellDim() + getOffset());
             }
         }
-    }
 
+
+        public class GameEventHandler extends MouseAdapter {
+
+            public void mousePressed(MouseEvent e) {
+
+                int xClick = e.getX();
+                int yClick = e.getY();
+
+                int xPos = pixel2panelX(xClick);
+                int yPos = pixel2panelY(yClick);
+
+                System.out.println("Mouse clicked: (" + xClick + ", " + yClick + ") hit square (" + xPos + ", " + yPos + ")");
+            }
+        }
+    }//end of GameEventHandler
+
+
+    /**
+     * This class shows the heat map under the game board, and shows the options to change the function
+     *  displaying the heat map
+     */
     private class HeatMapUI extends JPanel implements ActionListener {
 
         Function<AmazonSquare, Integer> mapFunction = null;
-
+        boolean invert = false;
 
         JRadioButton noneRB, strengthRB, mobilityRB, distanceWhiteQueenRB, distanceBlackQueenRB, distanceWhiteKingRB, distanceBlackKingRB;
 
         private static final String NONE = "None";
         private static final String STRENGTH = "Strength";
-        private static final String MOBILITY = "Nobility";
+        private static final String MOBILITY = "Mobility";
         private static final String DISTANCEWQ = "WQ Distance";
         private static final String DISTANCEBQ = "BQ Distance";
         private static final String DISTANCEWK = "WK Distance";
@@ -277,24 +315,31 @@ public class AmazonBoardUI extends JLayeredPane {
 
             switch (e.getActionCommand()) {
 
-
+                // Set the function in which to generate the heat map with
+                // Can set flag for inversion, for values were low is favorable
                 case STRENGTH:
                     f = AmazonSquare::getSquareStrength;
+                    invert = false;
                     break;
                 case MOBILITY:
                     f = AmazonSquare::getMobility;
+                    invert = false;
                     break;
                 case DISTANCEWQ:
                     f = AmazonSquare::getWhiteQueenDistance;
+                    invert = true;
                     break;
                 case DISTANCEBQ:
                     f = AmazonSquare::getBlackQueenDistance;
+                    invert = true;
                     break;
                 case DISTANCEWK:
                     f = AmazonSquare::getWhiteKingDistance;
+                    invert = true;
                     break;
                 case DISTANCEBK:
                     f = AmazonSquare::getBlackKingDistance;
+                    invert = true;
                     break;
                 default:
                     f = null;
@@ -305,7 +350,12 @@ public class AmazonBoardUI extends JLayeredPane {
 
         }
 
-
+        /**
+         * Set the function for the heat map to display
+         * Function must have a return type of null, and take no arguments
+         *
+         * @param f The function in AmazonSquare to show
+         */
         public void setFunction(Function<AmazonSquare, Integer> f) {
 
             mapFunction = f;
@@ -313,16 +363,19 @@ public class AmazonBoardUI extends JLayeredPane {
             parent.repaint();
         }
 
+        /**
+         * Required for repaint
+         * @param gg The graphics
+         */
         protected void paintComponent(Graphics gg) {
             Graphics g = (Graphics2D) gg;
-
             paintHeatmap(g);
-
         }
 
         /**
          * Paints a heatmap of a particular variable on the board
          * Will create a gradient between the min and max value of the variable, with red being low and green being high
+         * TODO: should color under queens show as colored for distance?
          *
          * @param g The graphic for the board
          */
@@ -338,7 +391,7 @@ public class AmazonBoardUI extends JLayeredPane {
                 for (int y = 1; y <= 10; y++) {
 
                     //Remove any of the MAX_VALUE
-                    int value = mapFunction.apply(board.getSquare(x, y));
+                    int value = mapFunction.apply(getBoard().getSquare(x, y));
                     if (value == Integer.MAX_VALUE) value = 0;
 
                     maxValue = Math.max(maxValue, value);
@@ -352,19 +405,16 @@ public class AmazonBoardUI extends JLayeredPane {
                 for (int y = 1; y <= 10; y++) {
 
                     //Remove any of the MAX_VALUE
-                    int value = mapFunction.apply(board.getSquare(x, y));
-                    if (value == Integer.MAX_VALUE) value = 0;
+                    int value = mapFunction.apply(getBoard().getSquare(x, y));
+                    if (value == Integer.MAX_VALUE) g.setColor(Color.gray);
+                    else if (invert) g.setColor(new Color(1-(((float) maxValue - value) / maxValue), 1-((float) value / maxValue), 0));
+                    else g.setColor(new Color((((float) maxValue - value) / maxValue), ((float) value / maxValue), 0));
 
-                    //System.out.println("Making color with r:" + (((float)maxValue - value)/maxValue) + " g: " + ((float)value/maxValue));
-
-                    //Color is a gradient between red and green. Red when low, and green when high
-                    g.setColor(new Color((((float) maxValue - value) / maxValue), ((float) value / maxValue), 0));
-                    g.drawRect(getPanelXcoord(x), getPanelYcoord(y), width / rows, width / rows);  //TODO: change fill size
-                    g.fillRect(getPanelXcoord(x), getPanelYcoord(y), width / rows, width / rows);  //TODO: change fill size
+                    g.drawRect(panel2pixelX(x), panel2pixelY(y), width / rows, width / rows);  //TODO: change fill size
+                    g.fillRect(panel2pixelX(x), panel2pixelY(y), width / rows, width / rows);  //TODO: change fill size
 
                 }
         }
-
 
     }
 }

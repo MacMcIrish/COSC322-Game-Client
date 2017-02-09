@@ -3,8 +3,8 @@ package AmazonGame;
 import AmazonBoard.AmazonSquare;
 import ygraphs.ai.smart_fox.GameMessage;
 import ygraphs.ai.smart_fox.games.BoardGameModel;
+import ygraphs.ai.smart_fox.games.GameClient;
 import ygraphs.ai.smart_fox.games.GamePlayer;
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +15,16 @@ import java.util.Map;
  */
 public abstract class AmazonPlayer extends GamePlayer {
 
-    public AmazonPlayer() {
+    GameClient client;
+
+    public AmazonPlayer(GameClient client) {
+        this.client = client;
+    }
+
+    @Override
+    public void onLogin() {
+        ArrayList<String> rooms = client.getRoomList();
+        this.client.joinRoom(rooms.get(0)); //TODO: should be able to choose which room to join
     }
 
     abstract void handleMouseClick(int posX, int posY); //blank method if computer player
@@ -42,5 +51,4 @@ public abstract class AmazonPlayer extends GamePlayer {
         }
         return true;
     }
-
 }

@@ -41,7 +41,7 @@ public class BetterAmazon extends GamePlayer{
 
         //connectToServer(name, passwd);
 
-        AmazonUI amazonUI = new AmazonUI();
+        //AmazonUI amazonUI = new AmazonUI(game);
         AmazonBoard board = new AmazonBoard();
 
     }

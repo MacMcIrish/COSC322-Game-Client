@@ -1,42 +1,45 @@
 package AmazonUI;
 
-import AmazonBoard.*;
+import AmazonGame.AmazonGame;
 import ygraphs.ai.smart_fox.games.Amazon;
-import ygraphs.ai.smart_fox.games.BetterAmazon;
-import ygraphs.ai.smart_fox.games.BoardGameModel;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.util.function.Function;
 
 /**
  * Created by D on 2/8/2017.
  */
 public class AmazonUI extends JFrame {
 
+    private AmazonGame game;
 
-    public AmazonUI() {
+    public AmazonUI(AmazonGame game) {
 
-        setSize(1000, 1000);
+        this.game = game;
+
+        setSize(1300, 800);
 
         setTitle("Game of the Amazons (COSC 322, UBCO)");
 
-        setLocation(200, 200);
-        setVisible(true);
-        repaint();
-        setLayout(null);
+        setLocationRelativeTo(null);
 
         Container contentPane = getContentPane();
-        contentPane.setLayout(new BorderLayout());
-        contentPane.add(Box.createVerticalGlue());
+        contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.X_AXIS));
+        //contentPane.add(Box.createVerticalGlue());
 
-        AmazonBoardUI AmazonBoardUI = new AmazonBoardUI();
+        AmazonBoardUI amazonBoardUI = new AmazonBoardUI(game);
+        AmazonSideUI amazonSideUI = new AmazonSideUI(game);
 
         //createGameBoard();
-        contentPane.add(AmazonBoardUI, BorderLayout.CENTER);
+        contentPane.add(amazonBoardUI);
+        contentPane.add(amazonSideUI);
+
+        setVisible(true);
+        repaint();
     }
+
+
+
+
+
 }
