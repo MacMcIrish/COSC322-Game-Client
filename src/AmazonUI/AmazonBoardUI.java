@@ -13,6 +13,9 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.function.Function;
 
+import java.awt.event.*;
+
+
 /**
  * Created by D on 2/8/2017.
  */
@@ -47,21 +50,21 @@ public class AmazonBoardUI extends JLayeredPane {
         setPreferredSize(new Dimension(width, height));
 
         GameBoardUI boardUI = new GameBoardUI();
-        HeatMapUI heatMapUI = new HeatMapUI();
+        HeatMapUI heatMapUI = new HeatMapUI(this);
 
         board = new AmazonBoard();
 
         setLayout(new BorderLayout());
 
-        boardUI.setBounds(0,0,width+1,height+1);
-        heatMapUI.setBounds(0,0,width+1,height+1);
+        boardUI.setBounds(0, 0, width + 1, height + 1);
+        heatMapUI.setBounds(0, 0, width + 1, height + 1);
 
         add(boardUI);
         add(heatMapUI);
         setLayer(heatMapUI, 0);
-        setLayer(boardUI, 1);
+        setLayer(boardUI, 3);
 
-        heatMapUI.setFunction(AmazonSquare::getSquareStrength);
+       // heatMapUI.setFunction(AmazonSquare::getSquareStrength);
 
     }
 
@@ -133,10 +136,9 @@ public class AmazonBoardUI extends JLayeredPane {
         protected void paintComponent(Graphics gg) {
             Graphics g = (Graphics2D) gg;
 
-          //  paintHeatmap(g, AmazonSquare::getWhiteKingDistance);
+            //  paintHeatmap(g, AmazonSquare::getWhiteKingDistance);
             paintGrid(g);
             paintIcons(g);
-
         }
 
         /**
@@ -191,20 +193,130 @@ public class AmazonBoardUI extends JLayeredPane {
         }
     }
 
-    private class HeatMapUI extends JPanel {
+    private class HeatMapUI extends JPanel implements ActionListener {
 
         Function<AmazonSquare, Integer> mapFunction = null;
+
+
+        JRadioButton noneRB, strengthRB, mobilityRB, distanceWhiteQueenRB, distanceBlackQueenRB, distanceWhiteKingRB, distanceBlackKingRB;
+
+        private static final String NONE = "None";
+        private static final String STRENGTH = "Strength";
+        private static final String MOBILITY = "Nobility";
+        private static final String DISTANCEWQ = "WQ Distance";
+        private static final String DISTANCEBQ = "BQ Distance";
+        private static final String DISTANCEWK = "WK Distance";
+        private static final String DISTANCEBK = "BK Distance";
+
+        JComponent parent;
+
+        public HeatMapUI(JComponent parent) {
+
+            this.parent = parent;
+
+            setLayout(new BorderLayout());
+
+            //Setup the radio buttons
+            noneRB = new JRadioButton(NONE);
+            noneRB.setSelected(true);
+            noneRB.setActionCommand(NONE);
+
+            strengthRB = new JRadioButton(STRENGTH);
+            strengthRB.setActionCommand(STRENGTH);
+
+            mobilityRB = new JRadioButton(MOBILITY);
+            mobilityRB.setActionCommand(MOBILITY);
+
+            distanceWhiteQueenRB = new JRadioButton(DISTANCEWQ);
+            distanceWhiteQueenRB.setActionCommand(DISTANCEWQ);
+
+            distanceBlackQueenRB = new JRadioButton(DISTANCEBQ);
+            distanceBlackQueenRB.setActionCommand(DISTANCEBQ);
+
+            distanceWhiteKingRB = new JRadioButton(DISTANCEWK);
+            distanceWhiteKingRB.setActionCommand(DISTANCEWK);
+
+            distanceBlackKingRB = new JRadioButton(DISTANCEBK);
+            distanceBlackKingRB.setActionCommand(DISTANCEBK);
+
+            ButtonGroup group = new ButtonGroup();
+            group.add(noneRB);
+            group.add(strengthRB);
+            group.add(mobilityRB);
+            group.add(distanceWhiteQueenRB);
+            group.add(distanceBlackQueenRB);
+            group.add(distanceWhiteKingRB);
+            group.add(distanceBlackKingRB);
+
+            noneRB.addActionListener(this);
+            strengthRB.addActionListener(this);
+            mobilityRB.addActionListener(this);
+            distanceWhiteQueenRB.addActionListener(this);
+            distanceBlackQueenRB.addActionListener(this);
+            distanceWhiteKingRB.addActionListener(this);
+            distanceBlackKingRB.addActionListener(this);
+
+
+            JPanel radioPanel = new JPanel(new FlowLayout());
+            radioPanel.add(noneRB);
+            radioPanel.add(strengthRB);
+            radioPanel.add(mobilityRB);
+            radioPanel.add(distanceWhiteQueenRB);
+            radioPanel.add(distanceBlackQueenRB);
+            radioPanel.add(distanceWhiteKingRB);
+            radioPanel.add(distanceBlackKingRB);
+
+            add(radioPanel, BorderLayout.PAGE_END);
+
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+            Function<AmazonSquare, Integer> f = null;
+
+            switch (e.getActionCommand()) {
+
+
+                case STRENGTH:
+                    f = AmazonSquare::getSquareStrength;
+                    break;
+                case MOBILITY:
+                    f = AmazonSquare::getMobility;
+                    break;
+                case DISTANCEWQ:
+                    f = AmazonSquare::getWhiteQueenDistance;
+                    break;
+                case DISTANCEBQ:
+                    f = AmazonSquare::getBlackQueenDistance;
+                    break;
+                case DISTANCEWK:
+                    f = AmazonSquare::getWhiteKingDistance;
+                    break;
+                case DISTANCEBK:
+                    f = AmazonSquare::getBlackKingDistance;
+                    break;
+                default:
+                    f = null;
+                    break;
+            }
+
+            setFunction(f);
+
+        }
+
 
         public void setFunction(Function<AmazonSquare, Integer> f) {
 
             mapFunction = f;
             repaint();
+            parent.repaint();
         }
 
         protected void paintComponent(Graphics gg) {
-           Graphics g = (Graphics2D) gg;
+            Graphics g = (Graphics2D) gg;
 
-           paintHeatmap(g);
+            paintHeatmap(g);
 
         }
 
@@ -247,10 +359,12 @@ public class AmazonBoardUI extends JLayeredPane {
 
                     //Color is a gradient between red and green. Red when low, and green when high
                     g.setColor(new Color((((float) maxValue - value) / maxValue), ((float) value / maxValue), 0));
-                    g.drawRect(getPanelXcoord(x), getPanelYcoord(y), width/rows, width/rows);  //TODO: change fill size
-                    g.fillRect(getPanelXcoord(x), getPanelYcoord(y), width/rows, width/rows);  //TODO: change fill size
+                    g.drawRect(getPanelXcoord(x), getPanelYcoord(y), width / rows, width / rows);  //TODO: change fill size
+                    g.fillRect(getPanelXcoord(x), getPanelYcoord(y), width / rows, width / rows);  //TODO: change fill size
 
                 }
         }
+
+
     }
 }
