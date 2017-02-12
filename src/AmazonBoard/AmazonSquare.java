@@ -25,7 +25,6 @@ public class AmazonSquare {
         setPosX(posX);
         setPosY(posY);
         setPieceType(pieceType);
-
         resetDistances();
 
     }
@@ -37,6 +36,13 @@ public class AmazonSquare {
                 ", PieceType: " + pieceType;
 
     }
+
+    public String toStringCoords() {
+
+        return "(" + posX + ", " + posY + ")";
+
+    }
+
 
     public int getPosX() {
         return posX;

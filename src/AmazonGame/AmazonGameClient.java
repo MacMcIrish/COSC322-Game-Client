@@ -1,38 +1,34 @@
 package AmazonGame;
 
-import AmazonBoard.AmazonSquare;
-import ygraphs.ai.smart_fox.games.*;
+import AmazonEvaluator.AmazonMove;
+import ygraphs.ai.smart_fox.games.GameClient;
+import ygraphs.ai.smart_fox.games.GamePlayer;
 
 /**
  * Created by D on 2/8/2017.
  */
 public class AmazonGameClient extends GameClient {
 
-    public static final String GAME_START = "cosc322.game-action.start";
-    public static final String GAME_MOVE = "cosc322.game-action.move";
-
-    public AmazonGameClient(String handle, String passwd) {
-        super(handle, passwd);
-    }
-
     public AmazonGameClient(String handle, String passwd, GamePlayer delegate) {
         super(handle, passwd, delegate);
+
     }
 
-    public void sendMoveMessage(AmazonSquare amazonInitial, AmazonSquare amazonFinal, AmazonSquare arrow) {
+    public void sendMoveMessage(AmazonMove move) {
 
         int[] qf = new int[2];
-        qf[0] = amazonInitial.getPosY();
-        qf[1] = amazonInitial.getPosX();
+        qf[0] = move.getInitial().getPosY();
+        qf[1] = move.getInitial().getPosX();
 
         int[] qn = new int[2];
-        qn[0] = amazonFinal.getPosY();
-        qn[1] = amazonFinal.getPosY();
+        qn[0] = move.getFinal().getPosY();
+        qn[1] = move.getFinal().getPosX();
 
         int[] ar = new int[2];
-        ar[0] = arrow.getPosY();
-        ar[1] = arrow.getPosX();
+        ar[0] = move.getArrow().getPosY();
+        ar[1] = move.getArrow().getPosX();
 
         sendMoveMessage(qf, qn, ar);
     }
+
 }

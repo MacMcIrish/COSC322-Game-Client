@@ -1,5 +1,7 @@
 package AmazonBoard;
 
+import AmazonEvaluator.AmazonMove;
+
 import java.util.*;
 
 /**
@@ -54,22 +56,14 @@ public class AmazonBoard {
 
         long time = System.currentTimeMillis();
 
+       // moveAmazon(1, 4, 1, 6);
+       // shootArrow(1, 6, 2, 6);
+       // shootArrow(1, 6, 2, 7);
+       // shootArrow(1, 6, 2, 5);
+      //  shootArrow(10, 4, 7, 7);
+      //  shootArrow(10, 4, 8, 6);
 
-        System.out.println(this.toString());
-
-        moveAmazon(1, 4, 1, 6);
-
-        System.out.println(this.toString());
-
-        shootArrow(1, 6, 2, 6);
-        shootArrow(1, 6, 2, 7);
-        shootArrow(1, 6, 2, 5);
-
-        System.out.println(this.toString());
-
-        generateStrengthValues();
-        calculateDistances();
-        generateMobilityValues();
+        calculateBoard();
 
         System.out.println(this.toString());
 
@@ -101,6 +95,25 @@ public class AmazonBoard {
                 list.add(getSquare(x, y));
 
         return list;
+    }
+
+    /**
+     * Get the list of queens
+     * @param color The color of which to retrieve the queens for
+     * @return The list of queen squares for a particular color
+     */
+    public ArrayList<AmazonSquare> getQueenList(int color) {
+        return (color == AmazonSquare.PIECETYPE_AMAZON_WHITE ? whitePieces : blackPieces);
+    }
+
+
+    /**
+     * Calculates the square strength, mobility and distances on the board
+     */
+    public void calculateBoard() {
+        generateStrengthValues();
+        calculateDistances();
+        generateMobilityValues();
     }
 
     /**
@@ -146,7 +159,7 @@ public class AmazonBoard {
      * @param square The square to check
      * @return A list of available squares
      */
-    private ArrayList<AmazonSquare> generateListOfValidMoves(AmazonSquare square) {
+    public ArrayList<AmazonSquare> generateListOfValidMoves(AmazonSquare square) {
 
         return generateListOfValidMoves(square, maxX);
     }
@@ -255,7 +268,7 @@ public class AmazonBoard {
      * @param sFinal The final square
      * @return Boolean Whether the movement is valid
      */
-    private boolean isMoveValid(AmazonSquare sInit, AmazonSquare sFinal) {
+    public boolean isMoveValid(AmazonSquare sInit, AmazonSquare sFinal) {
 
         ArrayList<AmazonSquare> moves = generateListOfValidMoves(sInit);
 
@@ -263,6 +276,19 @@ public class AmazonBoard {
 
         return moves.contains(sFinal);
 
+
+
+    }
+
+    /**
+     * Executes a game move, must be valid, or bad things happen
+     * @param move The move to be executed
+     */
+    public void executeMove(AmazonMove move) {
+
+        moveAmazon(move.getInitial(), move.getFinal());
+        shootArrow(move.getFinal(), move.getArrow());
+        calculateBoard();
     }
 
     /**
@@ -279,6 +305,9 @@ public class AmazonBoard {
 
         moveAmazon(getSquare(initPosX, initPosY), getSquare(finalPosX, finalPosY));
     }
+
+
+
 
     /**
      * Moves a queen from a particular space to another
@@ -328,6 +357,18 @@ public class AmazonBoard {
     }
 
     /**
+     * Test function, don't use in game - forces an arrow into a square
+     * @param arrow The
+     */
+    public void forceArrow(AmazonSquare arrow) {
+
+        if (arrow.getPieceType() == AmazonSquare.PIECETYPE_AVAILABLE) {
+            arrow.setPieceType(AmazonSquare.PIECETYPE_ARROW);
+            calculateBoard();
+        }
+    }
+
+    /**
      * Shoots an arrow from a particular space to another
      * TODO: move to GameAction class
      *
@@ -354,6 +395,8 @@ public class AmazonBoard {
      * TODO: Move this to evaluation class
      */
     public void calculateDistances() {
+
+        resetDistances();
 
         calculateQueenDistances(AmazonSquare.PIECETYPE_AMAZON_WHITE);
         calculateKingDistances(AmazonSquare.PIECETYPE_AMAZON_WHITE);
@@ -563,7 +606,7 @@ public class AmazonBoard {
                 else
                     getSquare(x, y).setMobility(calculateSquareMobility(getSquare(x, y)));
 
-                System.out.println("Mobility for (" + x + " , " + y + "): " + getSquare(x, y).getMobility());
+                //System.out.println("Mobility for (" + x + " , " + y + "): " + getSquare(x, y).getMobility());
             }
     }
 

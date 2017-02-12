@@ -15,18 +15,21 @@ import AmazonGame.*;
  */
 public class AmazonSideUI extends JPanel implements ActionListener {
 
-    private AmazonGame game;
+    private AmazonGameClient client;
 
-    public AmazonSideUI(AmazonGame game) {
+    public AmazonSideUI(AmazonGameClient client) {
 
-        this.game = game;
+        this.client = client;
 
         setPreferredSize(new Dimension(500, 800));
 
         JoinGameUI joinGameUI = new JoinGameUI();
+        JoinRoomUI joinRoomUI = new JoinRoomUI();
 
         add(joinGameUI);
+        add(joinRoomUI);
 
+        joinRoomUI.setEnabled(false);
 
     }
 
@@ -37,7 +40,6 @@ public class AmazonSideUI extends JPanel implements ActionListener {
     }
 
     public class JoinGameUI extends JPanel implements ActionListener {
-
 
         List<String> playerList = Arrays.asList("HumanPlayer", "RandomAI", "SmartAI");
 
@@ -50,17 +52,17 @@ public class AmazonSideUI extends JPanel implements ActionListener {
             setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
             playerListCB = new JComboBox(playerList.toArray(new String[0]));
+            playerListCB.setPreferredSize(new Dimension(150, getHeight()));
            // playerListCB.setSelectedIndex(0);
            // playerListCB.addActionListener(this);
 
             joinGameB = new JButton("Join Game");
             joinGameB.addActionListener(this);
-            joinGameB.setActionCommand("selected");
+            joinGameB.setActionCommand("pressed");
 
             add(playerListCB);
             add(joinGameB);
         }
-
 
         /**
          * Sends the selected player name to the game, which will let you log in to the server
@@ -68,7 +70,44 @@ public class AmazonSideUI extends JPanel implements ActionListener {
          */
         @Override
         public void actionPerformed(ActionEvent e) {
-            game.joinGame(e.getActionCommand());
+           // client.joinGame(playerListCB.getSelectedItem().toString());
+        }
+    }
+
+    /**
+     * TODO: Make this look disable before the rooms are loaded
+     */
+    public class JoinRoomUI extends JPanel implements ActionListener {
+
+        JComboBox roomCB;
+        JButton joinRoomB;
+
+        public JoinRoomUI() {
+            //playerList = Arrays.asList("Human player", "Random AI", "Smart AI");
+
+            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+
+            roomCB = new JComboBox(new String[]{""});
+            roomCB.setPreferredSize(new Dimension(150, getHeight()));
+            // playerListCB.setSelectedIndex(0);
+            // playerListCB.addActionListener(this);
+
+            joinRoomB = new JButton("Join Room");
+            joinRoomB.setActionCommand("pressed");
+
+            add(roomCB);
+            add(joinRoomB);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            client.joinRoom(roomCB.getSelectedItem().toString());
+        }
+
+        public void enableThis(List<String> l) {
+
+            roomCB.setModel(new DefaultComboBoxModel( l.toArray(new String[0])));
+            joinRoomB.addActionListener(this);
         }
     }
 }

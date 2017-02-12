@@ -1,7 +1,7 @@
 package AmazonUI;
 
-import AmazonGame.AmazonGame;
-import ygraphs.ai.smart_fox.games.Amazon;
+import AmazonGame.AmazonGameClient;
+import AmazonGame.AmazonPlayer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,15 +11,15 @@ import java.awt.*;
  */
 public class AmazonUI extends JFrame {
 
-    private AmazonGame game;
+    private AmazonPlayer player;
 
-    public AmazonUI(AmazonGame game) {
+    public AmazonUI(AmazonPlayer player) {
 
-        this.game = game;
+        this.player = player;
 
         setSize(1300, 800);
 
-        setTitle("Game of the Amazons (COSC 322, UBCO)");
+        setTitle("Game of the Amazons (COSC 322, UBCO). Player: " + player.userName());
 
         setLocationRelativeTo(null);
 
@@ -27,19 +27,14 @@ public class AmazonUI extends JFrame {
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.X_AXIS));
         //contentPane.add(Box.createVerticalGlue());
 
-        AmazonBoardUI amazonBoardUI = new AmazonBoardUI(game);
-        AmazonSideUI amazonSideUI = new AmazonSideUI(game);
+        AmazonBoardUI amazonBoardUI = new AmazonBoardUI(player);
+        //AmazonSideUI amazonSideUI = new AmazonSideUI(player);
 
         //createGameBoard();
         contentPane.add(amazonBoardUI);
-        contentPane.add(amazonSideUI);
+      //  contentPane.add(amazonSideUI);
 
         setVisible(true);
         repaint();
     }
-
-
-
-
-
 }

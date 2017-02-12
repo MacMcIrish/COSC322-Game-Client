@@ -55,6 +55,7 @@ public class Amazon extends GamePlayer{
 
         //once logged in, the gameClient will have  the names of available game rooms
         ArrayList<String> rooms = gameClient.getRoomList();
+        System.out.println(String.join(",", rooms));
         this.gameClient.joinRoom(rooms.get(0));
     }
 

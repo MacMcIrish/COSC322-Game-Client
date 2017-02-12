@@ -1,7 +1,7 @@
 package AmazonUI;
 
 import AmazonBoard.*;
-import AmazonGame.AmazonGame;
+import AmazonGame.*;
 import ygraphs.ai.smart_fox.games.BoardGameModel;
 
 import javax.imageio.ImageIO;
@@ -11,6 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.function.Function;
+import AmazonGame.*;
 
 import java.awt.event.*;
 
@@ -22,7 +23,7 @@ public class AmazonBoardUI extends JLayeredPane {
 
     AmazonBoard board;
 
-    private AmazonGame game;
+    private AmazonPlayer player;
 
     private static final long serialVersionUID = 1L;
     private int rows = 10;  //TODO: have these taken from the gameboard
@@ -35,24 +36,24 @@ public class AmazonBoardUI extends JLayeredPane {
 
     Image iconQueenWhite = null, iconQueenBlack = null, iconArrow = null, iconTransparent = null;
 
-    private BoardGameModel gameModel = null;
-
-    boolean playerAMove;
+    HeatMapUI heatMapUI;
+    GameBoardUI boardUI;
 
     /**
      * Creates the game board on the left of the screen
-     * @param game The AmazonGame
+     *
+     * @param player The Player
      */
-    public AmazonBoardUI(AmazonGame game) {
+    public AmazonBoardUI(AmazonPlayer player) {
 
-        this.game = game;
+        this.player = player;
 
         setPreferredSize(new Dimension(width, height));
 
-        GameBoardUI boardUI = new GameBoardUI();
-        HeatMapUI heatMapUI = new HeatMapUI(this);
+        board = player.getBoard();
 
-        board = new AmazonBoard();
+        boardUI = new GameBoardUI(this);
+        heatMapUI = new HeatMapUI(this);
 
         boardUI.setBounds(0, 0, width + 1, height + 1);
         heatMapUI.setBounds(0, 0, width + 1, height + 1 + 50);
@@ -93,6 +94,7 @@ public class AmazonBoardUI extends JLayeredPane {
 
     /**
      * Converts a mouse click point to a particular square on the game board
+     *
      * @param pixelX The x pixel value of a mouse click
      * @return The x coord of the square being clicked (1-10)
      */
@@ -102,6 +104,7 @@ public class AmazonBoardUI extends JLayeredPane {
 
     /**
      * Converts a mouse click point to a particular square on the game board
+     *
      * @param pixelY The y pixel value of a mouse click
      * @return The y coord of the square being clicked (1-10)
      */
@@ -120,13 +123,18 @@ public class AmazonBoardUI extends JLayeredPane {
 
     private class GameBoardUI extends JPanel {
 
-        public GameBoardUI() {
+        JComponent parent;
+
+
+        public GameBoardUI(JComponent parent) {
             // this.game = game;
             // gameModel = new BoardGameModel(this.rows + 1, this.cols + 1);
 
             //if(!game.isGamebot){
             //    addMouseListener(new Amazon.GameBoard.GameEventHandler());
             //}
+
+            this.parent = parent;
 
             addMouseListener(new GameEventHandler());
             loadImages();
@@ -210,10 +218,15 @@ public class AmazonBoardUI extends JLayeredPane {
             }
         }
 
-
         public class GameEventHandler extends MouseAdapter {
 
+            //Variables
+            int clicks = 0;
+            AmazonSquare sInit, sFinal, sArrow;
+
             public void mousePressed(MouseEvent e) {
+
+                //TODO: code to handle clicks and movement is just for testing, should be implemented through the humanPlayer
 
                 int xClick = e.getX();
                 int yClick = e.getY();
@@ -222,14 +235,74 @@ public class AmazonBoardUI extends JLayeredPane {
                 int yPos = pixel2panelY(yClick);
 
                 System.out.println("Mouse clicked: (" + xClick + ", " + yClick + ") hit square (" + xPos + ", " + yPos + ")");
+
+                AmazonSquare target = board.getSquare(xPos, yPos);
+
+
+
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    if (clicks == 0) {
+
+                        if (target.getPieceType() == AmazonSquare.PIECETYPE_AMAZON_WHITE ||
+                                target.getPieceType() == AmazonSquare.PIECETYPE_AMAZON_BLACK) {
+                            sInit = target;
+                            clicks++;
+                            System.out.println("Selected unit at: (" + xPos + ", " + yPos + ")");
+                        } else {
+                            System.out.println("No valid unit: (" + xPos + ", " + yPos + ")");
+                        }
+
+                    } else if (clicks == 1) {
+
+                        if (target.getPieceType() == AmazonSquare.PIECETYPE_AVAILABLE && board.isMoveValid(sInit, target)) {
+                            sFinal = target;
+                            clicks++;
+                            board.moveAmazon(sInit, sFinal);
+                            System.out.println("Amazon moved to: (" + xPos + ", " + yPos + ")");
+                            board.calculateBoard();
+                            parent.repaint();
+
+                        } else {
+                            System.out.println("Invalid move to: (" + xPos + ", " + yPos + ")");
+
+                        }
+
+
+                    } else if (clicks == 2) {
+
+                        if (board.getSquare(xPos, yPos).getPieceType() == AmazonSquare.PIECETYPE_AVAILABLE && board.isMoveValid(sFinal, target)) {
+                            sArrow = target;
+                            board.shootArrow(sFinal, sArrow);
+                            clicks = 0;
+                            board.calculateBoard();
+                            parent.repaint();
+
+                        } else {
+                            System.out.println("Invalid move to: (" + xPos + ", " + yPos + ")");
+
+                        }
+
+                    }
+
+
+                }
+                if (e.getButton() == MouseEvent.BUTTON3) {
+
+                    board.forceArrow(target);
+                    parent.repaint();
+                    System.out.println(board.toString());
+
+                }
             }
+
+
         }
     }//end of GameEventHandler
 
 
     /**
      * This class shows the heat map under the game board, and shows the options to change the function
-     *  displaying the heat map
+     * displaying the heat map
      */
     private class HeatMapUI extends JPanel implements ActionListener {
 
@@ -365,6 +438,7 @@ public class AmazonBoardUI extends JLayeredPane {
 
         /**
          * Required for repaint
+         *
          * @param gg The graphics
          */
         protected void paintComponent(Graphics gg) {
@@ -407,8 +481,10 @@ public class AmazonBoardUI extends JLayeredPane {
                     //Remove any of the MAX_VALUE
                     int value = mapFunction.apply(getBoard().getSquare(x, y));
                     if (value == Integer.MAX_VALUE) g.setColor(Color.gray);
-                    else if (invert) g.setColor(new Color(1-(((float) maxValue - value) / maxValue), 1-((float) value / maxValue), 0));
-                    else g.setColor(new Color((((float) maxValue - value) / maxValue), ((float) value / maxValue), 0));
+                    else if (invert)
+                        g.setColor(new Color(1 - (((float) maxValue - value) / maxValue), 1 - ((float) value / maxValue), 0));
+                    else
+                        g.setColor(new Color((((float) maxValue - value) / maxValue), ((float) value / maxValue), 0));
 
                     g.drawRect(panel2pixelX(x), panel2pixelY(y), width / rows, width / rows);  //TODO: change fill size
                     g.fillRect(panel2pixelX(x), panel2pixelY(y), width / rows, width / rows);  //TODO: change fill size
@@ -418,3 +494,4 @@ public class AmazonBoardUI extends JLayeredPane {
 
     }
 }
+
