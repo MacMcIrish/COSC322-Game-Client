@@ -1,6 +1,7 @@
 package AmazonBoard;
 
 import AmazonEvaluator.AmazonMove;
+import AmazonEvaluator.InvalidMoveException;
 
 import java.util.*;
 
@@ -26,6 +27,7 @@ public class AmazonBoard {
     AmazonSquare[][] board = new AmazonSquare[maxY + 1][maxX + 1];
     ArrayList<AmazonSquare> whitePieces = new ArrayList<AmazonSquare>();
     ArrayList<AmazonSquare> blackPieces = new ArrayList<AmazonSquare>();
+    ArrayList<AmazonSquare> boardSquares = new ArrayList<AmazonSquare>();
 
     /**
      * Create the game board object, and set the initial positions of all the amazons
@@ -53,15 +55,16 @@ public class AmazonBoard {
         blackPieces.add(setSquare(maxX - 4, maxY - 1, AmazonSquare.PIECETYPE_AMAZON_BLACK));
         blackPieces.add(setSquare(maxX - 1, maxY - 4, AmazonSquare.PIECETYPE_AMAZON_BLACK));
 
+        boardSquares = getListOfSquares();
 
         long time = System.currentTimeMillis();
 
-       // moveAmazon(1, 4, 1, 6);
-       // shootArrow(1, 6, 2, 6);
-       // shootArrow(1, 6, 2, 7);
-       // shootArrow(1, 6, 2, 5);
-      //  shootArrow(10, 4, 7, 7);
-      //  shootArrow(10, 4, 8, 6);
+        // moveAmazon(1, 4, 1, 6);
+        // shootArrow(1, 6, 2, 6);
+        // shootArrow(1, 6, 2, 7);
+        // shootArrow(1, 6, 2, 5);
+        //  shootArrow(10, 4, 7, 7);
+        //  shootArrow(10, 4, 8, 6);
 
         calculateBoard();
 
@@ -88,6 +91,8 @@ public class AmazonBoard {
      */
     public ArrayList<AmazonSquare> getListOfSquares() {
 
+      //  if (boardSquares != null) return boardSquares; //hacky singleton
+
         ArrayList<AmazonSquare> list = new ArrayList<AmazonSquare>();
 
         for (int x = minX; x <= maxX; x++)
@@ -99,6 +104,7 @@ public class AmazonBoard {
 
     /**
      * Get the list of queens
+     *
      * @param color The color of which to retrieve the queens for
      * @return The list of queen squares for a particular color
      */
@@ -114,6 +120,22 @@ public class AmazonBoard {
         generateStrengthValues();
         calculateDistances();
         generateMobilityValues();
+    }
+
+    /**
+     * Checks the board to see if a player has won
+     * Win condition = all squares have a distance from white or black as MAX_INT
+     *
+     * @return True if won, false if not
+     */
+    public boolean checkForWinCondition() {
+
+        //don't iterate the outer perimeter
+        for (int x = minX + 1; x <= maxX - 1; x++)
+            for (int y = minY + 1; y <= maxY - 1; y++)
+                if (!getSquare(x, y).isCaptured()) return false;
+
+        return true;
     }
 
     /**
@@ -162,6 +184,14 @@ public class AmazonBoard {
     public ArrayList<AmazonSquare> generateListOfValidMoves(AmazonSquare square) {
 
         return generateListOfValidMoves(square, maxX);
+    }
+
+    public ArrayList<AmazonSquare> generateListOfValidShots(AmazonSquare sInit, AmazonSquare square) {
+
+        ArrayList<AmazonSquare> list = generateListOfValidMoves(square, maxX);
+        list.add(sInit);
+
+        return list;
     }
 
     /**
@@ -275,20 +305,65 @@ public class AmazonBoard {
         //System.out.println(Arrays.toString(moves.toArray()));
 
         return moves.contains(sFinal);
-
-
-
     }
 
     /**
+     * Checks to see if a game move is valid
+     * TODO: Move this to an evaluation class
+     *
+     * @param move A game move
+     * @return Boolean Whether the movement is valid
+     */
+    public boolean isMoveValid(AmazonMove move) {
+
+        ArrayList<AmazonSquare> moves = generateListOfValidMoves(move.getInitial());
+
+        if (!moves.contains(move.getFinal())) return false;
+
+        moves = generateListOfValidMoves(move.getFinal());
+        moves.add(move.getInitial());
+
+        if (!moves.contains(move.getArrow())) return false;
+
+        return true;
+    }
+
+
+    /**
+     * Checks to see if a move is on the list of acceptable moves
+     * TODO: Move this to an evaluation class
+     *
+     * @param sInit  The starting square
+     * @param sFinal The final square
+     * @return Boolean Whether the movement is valid
+     */
+    public boolean isShotValid(AmazonSquare sInit, AmazonSquare sFinal) {
+
+        ArrayList<AmazonSquare> moves = generateListOfValidMoves(sInit);
+
+        //System.out.println(Arrays.toString(moves.toArray()));
+
+        return moves.contains(sFinal);
+    }
+
+
+    /**
      * Executes a game move, must be valid, or bad things happen
+     *
      * @param move The move to be executed
      */
-    public void executeMove(AmazonMove move) {
+    public void executeMove(AmazonMove move) throws InvalidMoveException {
 
-        moveAmazon(move.getInitial(), move.getFinal());
-        shootArrow(move.getFinal(), move.getArrow());
+        if (!moveAmazon(move.getInitial(), move.getFinal())) throw new InvalidMoveException(move);
+        if (!shootArrow(move.getFinal(), move.getArrow())) throw new InvalidMoveException(move);
         calculateBoard();
+    }
+
+    public void undoMove(AmazonMove move) {
+
+
+        calculateBoard();
+
     }
 
     /**
@@ -300,13 +375,12 @@ public class AmazonBoard {
      * @param initPosY  The y position of the initial position
      * @param finalPosX The x position of the final position
      * @param finalPosY The y position of the final position
+     * @return Whether the move was successful
      */
-    public void moveAmazon(int initPosX, int initPosY, int finalPosX, int finalPosY) {
+    public boolean moveAmazon(int initPosX, int initPosY, int finalPosX, int finalPosY) {
 
-        moveAmazon(getSquare(initPosX, initPosY), getSquare(finalPosX, finalPosY));
+        return moveAmazon(getSquare(initPosX, initPosY), getSquare(finalPosX, finalPosY));
     }
-
-
 
 
     /**
@@ -315,14 +389,18 @@ public class AmazonBoard {
      *
      * @param sInit  The initial position
      * @param sFinal The final position
+     * @return Whether the move was successful
      */
-    public void moveAmazon(AmazonSquare sInit, AmazonSquare sFinal) {
+    public boolean moveAmazon(AmazonSquare sInit, AmazonSquare sFinal) {
 
-        //TODO: remove assertions
-        assert (sInit.getPieceType() == AmazonSquare.PIECETYPE_AMAZON_WHITE
-                || sInit.getPieceType() == AmazonSquare.PIECETYPE_AMAZON_BLACK);
+        //Fail if the sInit is not one of the queens
+        if (sInit.getPieceType() != AmazonSquare.PIECETYPE_AMAZON_WHITE
+                && sInit.getPieceType() != AmazonSquare.PIECETYPE_AMAZON_BLACK)
+            return false;
 
-        assert (isMoveValid(sInit, sFinal));
+        //Fail is the move is not valid
+        if (!isMoveValid(sInit, sFinal))
+            return false;
 
         switch (sInit.getPieceType()) {
             case AmazonSquare.PIECETYPE_AMAZON_WHITE:
@@ -338,6 +416,7 @@ public class AmazonBoard {
         sFinal.setPieceType(sInit.getPieceType());
         sInit.setPieceType(AmazonSquare.PIECETYPE_AVAILABLE);
 
+        return true;
     }
 
     /**
@@ -349,15 +428,17 @@ public class AmazonBoard {
      * @param initPosY  The y position of the initial position
      * @param finalPosX The x position of the final position
      * @param finalPosY The y position of the final position
+     * @return Whether the shot was successful
      */
-    public void shootArrow(int initPosX, int initPosY, int finalPosX, int finalPosY) {
+    public boolean shootArrow(int initPosX, int initPosY, int finalPosX, int finalPosY) {
 
-        shootArrow(getSquare(initPosX, initPosY), getSquare(finalPosX, finalPosY));
+        return shootArrow(getSquare(initPosX, initPosY), getSquare(finalPosX, finalPosY));
 
     }
 
     /**
      * Test function, don't use in game - forces an arrow into a square
+     *
      * @param arrow The
      */
     public void forceArrow(AmazonSquare arrow) {
@@ -374,21 +455,25 @@ public class AmazonBoard {
      *
      * @param amazon The square with the amazon
      * @param arrow  The square with the arrow
+     * @return Whether the shot was successful
      */
 
-    public void shootArrow(AmazonSquare amazon, AmazonSquare arrow) {
+    public boolean shootArrow(AmazonSquare amazon, AmazonSquare arrow) {
 
         //TODO: remove assertions
-        assert (amazon.getPieceType() == AmazonSquare.PIECETYPE_AMAZON_WHITE
-                || amazon.getPieceType() == AmazonSquare.PIECETYPE_AMAZON_BLACK);
+        if (amazon.getPieceType() != AmazonSquare.PIECETYPE_AMAZON_WHITE
+                && amazon.getPieceType() != AmazonSquare.PIECETYPE_AMAZON_BLACK)
+            return false;
 
-        assert arrow.getPieceType() != AmazonSquare.PIECETYPE_AVAILABLE;
+        if (arrow.getPieceType() != AmazonSquare.PIECETYPE_AVAILABLE)
+            return false;
 
-        assert isMoveValid(amazon, arrow);
+        if (!isShotValid(amazon, arrow)) return false;
 
         arrow.setPieceType(AmazonSquare.PIECETYPE_ARROW);
-    }
 
+        return true;
+    }
 
     /**
      * Calculates the queen and king distances for both players
@@ -405,7 +490,6 @@ public class AmazonBoard {
         calculateKingDistances(AmazonSquare.PIECETYPE_AMAZON_BLACK);
 
     }
-
 
     /**
      * Using queen movement, calculates the minimum distances between all squares and the closest amazon on a particular team
@@ -433,7 +517,7 @@ public class AmazonBoard {
      * TODO: Make this actually efficient
      * TODO: Use different variable for queenOrKing - is not particularly descriptive or helpful
      *
-     * @param color   The color of player in which to calculate min distances from
+     * @param color       The color of player in which to calculate min distances from
      * @param queenOrKing The max step size for movement (10 for queen, 1 for king)
      */
     public void calculateDistances(int color, int queenOrKing) {
@@ -446,7 +530,7 @@ public class AmazonBoard {
 
         list.addAll(generateListOfValidMoves(color, queenOrKing));
 
-        for (int n = 1; n <= (maxX*maxY); n++) { // maxX * maxY is the theoretical max moves, but will never actually be hit
+        for (int n = 1; n <= (maxX * maxY); n++) { // maxX * maxY is the theoretical max moves, but will never actually be hit
 
             Iterator<AmazonSquare> iterator = list.iterator(); // Have to use an iterator, since you can't add/remove from a list in a for loop
 
@@ -454,7 +538,7 @@ public class AmazonBoard {
 
                 AmazonSquare s = iterator.next();
 
-               //System.out.println("Square (" + s.getPosX() + ", " + s.getPosY() + ") distance = " + s.getDistance(color, queenOrKing) + " vs " + n);
+                System.out.println("Square " + s.toString() + " distance = " + s.getDistance(color, queenOrKing) + " vs " + n);
 
                 if (s.getDistance(color, queenOrKing) > n) { //if the square has a higher distance than is being checked
                     s.setDistance(color, n, queenOrKing);    // then set to the new distance
@@ -467,7 +551,7 @@ public class AmazonBoard {
             list.addAll(tempList); //add all of the new squares, if any
             tempList.clear();
 
-           // System.out.println("Calculate Distance: List length = " + list.size());
+             System.out.println("Calculate Distance: List length = " + list.size());
 
             if (list.size() == 0) break; //once all squares are at the minimum possible distance, exit
 
@@ -486,10 +570,10 @@ public class AmazonBoard {
 
     /**
      * Run only after calculateDistances has been run, otherwise all squares will show as captured
-     *  If distance = Max_int, then a particular color isn't able to reach that square, meaning the square is
-     *  captured, and we don't need to do anything to it anymore
-     *
-     *  TODO: Haven't actually tested this yet
+     * If distance = Max_int, then a particular color isn't able to reach that square, meaning the square is
+     * captured, and we don't need to do anything to it anymore
+     * <p>
+     * TODO: Haven't actually tested this yet
      */
     public void calculateCapturedSquares() {
 
@@ -568,7 +652,7 @@ public class AmazonBoard {
      * Calculates mobility of a queen, defined as the
      * As per An evaluation function for the game of amazons by Jens Lieberum:
      * http://ac.els-cdn.com/S0304397505005979/1-s2.0-S0304397505005979-main.pdf?_tid=d829bf2c-edc3-11e6-9fba-00000aab0f27&acdnat=1486533788_fbd052d744bf4a318972608ab142ac17
-     *
+     * <p>
      * For the length of each queens move, it calculates the (square strength) / 2^(kings move distance) and sums it to get mobility
      *
      * @param amazon The queen in which to check
@@ -588,7 +672,7 @@ public class AmazonBoard {
                     mobility += (list.get(i).getSquareStrength() / (Math.pow(2, i)));
             }
 
-            return (int) mobility;
+        return (int) mobility;
     }
 
     /**
@@ -598,8 +682,8 @@ public class AmazonBoard {
     public void generateMobilityValues() {
 
         //don't iterate the outer perimeter
-        for (int x = minX+1; x <= maxX-1; x++)
-            for (int y = minY+1; y <= maxY-1; y++) {
+        for (int x = minX + 1; x <= maxX - 1; x++)
+            for (int y = minY + 1; y <= maxY - 1; y++) {
 
                 if (getSquare(x, y).getPieceType() == AmazonSquare.PIECETYPE_ARROW) //ignore arrow squares
                     getSquare(x, y).setMobility(0);
@@ -682,12 +766,12 @@ public class AmazonBoard {
 
         for (int y = maxY; y >= minY; y--) { //needs to create s from top to bottom
             for (int x = minX; x <= maxX; x++) {
-                switch(getSquare(x, y).getPieceType()) {
+                switch (getSquare(x, y).getPieceType()) {
                     case AmazonSquare.PIECETYPE_AVAILABLE:
                         int distance = getSquare(x, y).getQueenDistance(color);
                         s += (Integer.toHexString(Math.min(15, distance))).toUpperCase();
                         break;
-            default:
+                    default:
                         s += "X";
                         break;
                 }
@@ -749,8 +833,8 @@ public class AmazonBoard {
 
         for (int y = maxY; y >= minY; y--) { //needs to create s from top to bottom
             for (int x = minX; x <= maxX; x++) {
-                double val = ((double)getSquare(x, y).getMobility()/(max+1))*16; //put max+1 to avoid divide by zero error
-                s += Integer.toHexString(Math.min((int)val,15)).toUpperCase();
+                double val = ((double) getSquare(x, y).getMobility() / (max + 1)) * 16; //put max+1 to avoid divide by zero error
+                s += Integer.toHexString(Math.min((int) val, 15)).toUpperCase();
             }
             s += "\n";
         }
@@ -777,7 +861,7 @@ public class AmazonBoard {
         for (int i = 0; i <= maxY; i++)
             s += (pieceTypes[i] + "   " +
                     strengthValues[i] + "   " +
-                    mobilityValue[i]  + "   " +
+                    mobilityValue[i] + "   " +
                     whiteQueenDistance[i] + "   " +
                     blackQueenDistance[i] + "   " +
                     whiteKingDistance[i] + "   " +

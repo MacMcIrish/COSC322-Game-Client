@@ -20,6 +20,7 @@ public abstract class AmazonPlayer extends GamePlayer {
     AmazonUI amazonUI;
     AmazonBoard board;
     String name = "team6", password = "team6";
+    ArrayList<AmazonMove> moveHistory = new ArrayList<AmazonMove>();
 
     public AmazonPlayer(String name, String password) {
 

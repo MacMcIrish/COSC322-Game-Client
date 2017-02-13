@@ -166,7 +166,9 @@ public class AmazonSquare {
     }
 
     public boolean isCaptured() {
-        return captured;
+
+        return (distanceQueenWhite == Integer.MAX_VALUE || distanceQueenBlack == Integer.MAX_VALUE);
+
     }
 
     public void setCaptured(boolean captured) {
@@ -181,5 +183,6 @@ public class AmazonSquare {
     public void setMobility(int mobility) {
         this.mobility = mobility;
     }
+
 
 }

@@ -15,9 +15,6 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
     AmazonEvaluator evaluator;
 
-    boolean isMyTurn = true;
-
-
     public AmazonAIPlayer(String name, String password, AmazonEvaluator evaluator) {
 
         super(name, password);
@@ -39,21 +36,42 @@ public class AmazonAIPlayer extends AmazonPlayer {
         System.out.println("Got message: " + messageType);
 
         if (messageType.equals(GameMessage.GAME_ACTION_START)) {
-            //Set the evaluator to color
+
+            //Set the evaluator to color, and execute first move if white
             if (((String) msgDetails.get("player-black")).equals(this.userName()))
                 evaluator.setColor(AmazonSquare.PIECETYPE_AMAZON_BLACK);
             else {
                 System.out.println("Is first player, finding move.");
                 evaluator.setColor(AmazonSquare.PIECETYPE_AMAZON_WHITE);
-
                 takeTurn(); //This is the first move of the game
-
             }
+
         } else if (messageType.equals(GameMessage.GAME_ACTION_MOVE)) { //TODO: remove move limit
 
             respondToMove(msgDetails);
+            if (board.checkForWinCondition()) {
+
+                int[] score = board.calculateScore();
+
+                System.out.println("No more valid moves remain.");
+                System.out.println("Final score: White - " + score[0] + ", Black - " + score[1]);
+                System.out.println("Terminating client");
+                gameClient.logout();
+                return true;
+            }
+
             takeTurn();
+        } else if (messageType.equals(GameMessage.GAME_STATE_PLAYER_LOST)) {
+            System.out.println("Other player has conceded. Terminating Client");
+            gameClient.logout();
+            return true;
         }
+
+
+
+
+
+
         return true;
 
     }
@@ -65,7 +83,15 @@ public class AmazonAIPlayer extends AmazonPlayer {
     private void respondToMove(Map<String, Object> msgDetails) {
         AmazonMove gotMove = generateMoveFromMsg(msgDetails);
         System.out.println(System.currentTimeMillis() + ": Got move: " + gotMove.toString());
-        board.executeMove(gotMove);
+
+        try {
+            board.executeMove(gotMove);
+        } catch (InvalidMoveException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        moveHistory.add(gotMove);
     }
 
     /**
@@ -73,10 +99,18 @@ public class AmazonAIPlayer extends AmazonPlayer {
      */
     private void takeTurn() {
         AmazonMove sentMove = evaluator.evaluateBoard(board);
+
+        try {
+            board.executeMove(sentMove);
+        } catch (InvalidMoveException e) {
+            e.printStackTrace();
+            return;
+        }
+
         System.out.println(System.currentTimeMillis() + ": Sending move: " + sentMove.toString());
-        board.executeMove(sentMove);
-        gameClient.sendMoveMessage(sentMove);
+        moveHistory.add(sentMove);
         amazonUI.repaint();
+        gameClient.sendMoveMessage(sentMove);
     }
 
     /**

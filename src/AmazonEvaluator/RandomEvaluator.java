@@ -23,11 +23,27 @@ public class RandomEvaluator extends AmazonEvaluator {
     public AmazonMove evaluateBoard(AmazonBoard board) {
         this.board = board;
 
-        AmazonSquare queen = getRandomQueen(playerColor);
-        AmazonSquare moveTo = getRandomMove(queen);
-        AmazonSquare arrow = getRandomMove(moveTo);
+        AmazonMove move = null;
 
-        return new AmazonMove(queen, moveTo, arrow);
+        while (move == null) {
+
+            AmazonSquare queen = getRandomQueen(playerColor);
+            if (queen == null) continue;
+            System.out.println("Selecting queen at " + queen.toString());
+
+            AmazonSquare moveTo = getRandomMove(queen);
+            if (moveTo == null) continue;
+            System.out.println("Moving queen to " + moveTo.toString());
+
+            AmazonSquare arrow = getRandomShot(queen, moveTo);
+            if (arrow == null) continue;
+            System.out.println("Shooting arrow to " + arrow.toString());
+
+            move = new AmazonMove(queen, moveTo, arrow);
+           // if (!board.isMoveValid(move)) continue;
+        }
+
+        return move;
     }
 
     /**
@@ -38,6 +54,9 @@ public class RandomEvaluator extends AmazonEvaluator {
     public AmazonSquare getRandomQueen(int color) {
 
         ArrayList<AmazonSquare> list = board.getQueenList(color);
+
+        if (list.size() < 1) return null;
+
         return list.get((new Random()).nextInt(list.size()));
 
     }
@@ -47,11 +66,21 @@ public class RandomEvaluator extends AmazonEvaluator {
      * @param s The square to get the move from
      * @return The randomly selected square from the list of available moves for that square
      */
-    public AmazonSquare getRandomMove(AmazonSquare s) {
+    public AmazonSquare getRandomMove(AmazonSquare square) {
 
-        ArrayList<AmazonSquare> list = board.generateListOfValidMoves(s);
+        ArrayList<AmazonSquare> list = board.generateListOfValidMoves(square);
+
+        if (list.size() < 1) return null;
+
         return list.get((new Random()).nextInt(list.size()));
-
     }
 
+    public AmazonSquare getRandomShot(AmazonSquare queen, AmazonSquare arrow) {
+
+        ArrayList<AmazonSquare> list = board.generateListOfValidShots(queen, arrow);
+
+        if (list.size() < 1) return null;
+
+        return list.get((new Random()).nextInt(list.size()));
+    }
 }
