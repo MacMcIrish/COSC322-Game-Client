@@ -1,5 +1,6 @@
 package AmazonUI;
 
+import AmazonGame.*;
 import AmazonGame.AmazonGameClient;
 import AmazonGame.AmazonPlayer;
 

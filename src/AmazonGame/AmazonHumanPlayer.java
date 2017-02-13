@@ -1,6 +1,7 @@
 package AmazonGame;
 
 import AmazonBoard.*;
+import AmazonEvaluator.AmazonEvaluator;
 import ygraphs.ai.smart_fox.games.GameClient;
 
 import java.util.Map;
@@ -29,4 +30,8 @@ public class AmazonHumanPlayer extends AmazonPlayer {
         return null;
     }
 
+    @Override
+    public String getAIType() {
+        return "Human";
+    }
 }

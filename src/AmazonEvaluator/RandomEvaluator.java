@@ -27,60 +27,23 @@ public class RandomEvaluator extends AmazonEvaluator {
 
         while (move == null) {
 
-            AmazonSquare queen = getRandomQueen(playerColor);
-            if (queen == null) continue;
-            System.out.println("Selecting queen at " + queen.toString());
+            AmazonSquare sInit = getRandomQueen(playerColor);
+            if (sInit == null) continue;
+            System.out.println("Selecting queen at " + sInit.toString());
 
-            AmazonSquare moveTo = getRandomMove(queen);
-            if (moveTo == null) continue;
-            System.out.println("Moving queen to " + moveTo.toString());
+            AmazonSquare sFinal = getRandomMove(sInit);
+            if (sFinal == null) continue;
+            System.out.println("Moving queen to " + sFinal.toString());
 
-            AmazonSquare arrow = getRandomShot(queen, moveTo);
+            AmazonSquare arrow = getRandomShot(sInit, sFinal);
             if (arrow == null) continue;
             System.out.println("Shooting arrow to " + arrow.toString());
 
-            move = new AmazonMove(queen, moveTo, arrow);
+            move = new AmazonMove(sInit, sFinal, arrow);
            // if (!board.isMoveValid(move)) continue;
         }
 
         return move;
     }
 
-    /**
-     * Finds a random queen on the board
-     * @param color The color to get
-     * @return The square of the random queen
-     */
-    public AmazonSquare getRandomQueen(int color) {
-
-        ArrayList<AmazonSquare> list = board.getQueenList(color);
-
-        if (list.size() < 1) return null;
-
-        return list.get((new Random()).nextInt(list.size()));
-
-    }
-
-    /**
-     * Gets a random move (queen distance) from a square
-     * @param s The square to get the move from
-     * @return The randomly selected square from the list of available moves for that square
-     */
-    public AmazonSquare getRandomMove(AmazonSquare square) {
-
-        ArrayList<AmazonSquare> list = board.generateListOfValidMoves(square);
-
-        if (list.size() < 1) return null;
-
-        return list.get((new Random()).nextInt(list.size()));
-    }
-
-    public AmazonSquare getRandomShot(AmazonSquare queen, AmazonSquare arrow) {
-
-        ArrayList<AmazonSquare> list = board.generateListOfValidShots(queen, arrow);
-
-        if (list.size() < 1) return null;
-
-        return list.get((new Random()).nextInt(list.size()));
-    }
 }

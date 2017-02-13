@@ -146,7 +146,7 @@ public class AmazonBoard {
      * @param color equal to 1 if white, equal to 2 if black
      * @return A list of available squares
      */
-    private Set<AmazonSquare> generateListOfValidMoves(int color) {
+    public Set<AmazonSquare> generateListOfValidMoves(int color) {
         return generateListOfValidMoves(color, maxX);
     }
 
@@ -186,9 +186,16 @@ public class AmazonBoard {
         return generateListOfValidMoves(square, maxX);
     }
 
-    public ArrayList<AmazonSquare> generateListOfValidShots(AmazonSquare sInit, AmazonSquare square) {
+    /**
+     * Returns a list of valid shots from a particular position.
+     * The initial position is included in the list
+     * @param sInit The initial queen position
+     * @param sFinal The final queen position
+     * @return
+     */
+    public ArrayList<AmazonSquare> generateListOfValidShots(AmazonSquare sInit, AmazonSquare sFinal) {
 
-        ArrayList<AmazonSquare> list = generateListOfValidMoves(square, maxX);
+        ArrayList<AmazonSquare> list = generateListOfValidMoves(sFinal, maxX);
         list.add(sInit);
 
         return list;

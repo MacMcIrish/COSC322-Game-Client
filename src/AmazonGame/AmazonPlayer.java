@@ -2,6 +2,7 @@ package AmazonGame;
 
 import AmazonBoard.AmazonBoard;
 import AmazonBoard.AmazonSquare;
+import AmazonEvaluator.AmazonEvaluator;
 import AmazonEvaluator.AmazonMove;
 import AmazonUI.AmazonUI;
 import ygraphs.ai.smart_fox.games.AmazonsGameMessage;
@@ -21,6 +22,7 @@ public abstract class AmazonPlayer extends GamePlayer {
     AmazonBoard board;
     String name = "team6", password = "team6";
     ArrayList<AmazonMove> moveHistory = new ArrayList<AmazonMove>();
+    AmazonEvaluator evaluator;
 
     public AmazonPlayer(String name, String password) {
 
@@ -103,5 +105,10 @@ public abstract class AmazonPlayer extends GamePlayer {
         return move;
     }
 
+    /**
+     * Only used by AmazonUI to get the name of the evaluator to display in the title
+     * @return The evaluator
+     */
 
+    public abstract String getAIType();
 }
