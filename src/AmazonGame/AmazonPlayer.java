@@ -31,33 +31,76 @@ public abstract class AmazonPlayer extends GamePlayer {
 
     }
 
+    /**
+     * When the player connects to the server, it will pick room 6 (designated for our group) and join it
+     * TODO: have the room number selectable when creating the game
+     */
+    @Override
+    public void onLogin() {
 
-    public void connectToServer(String name, String passwd){
+        ArrayList<String> rooms = gameClient.getRoomList();
+
+        System.out.println(gameClient.getRoomList().size() + " rooms available");
+        for (String room : gameClient.getRoomList()) System.out.println(room);
+
+        String room = rooms.get(6);
+
+        gameClient.joinRoom(room);
+        System.out.println(userName() + " joined room " + room);
+
+    }
+
+    /**
+     * Passes the player info and the player itself as a delegate to the server
+     *
+     * @param name   The name of the player
+     * @param passwd The password of the player (unused)
+     */
+    public void connectToServer(String name, String passwd) {
         System.out.println("Attempting to connect to server...");
         gameClient = new AmazonGameClient(name, passwd, this);
         System.out.println("Connected to server.");
     }
 
-    public AmazonBoard getBoard() {return board;}
+    /**
+     * Gets the game board
+     *
+     * @return The game board
+     */
+    public AmazonBoard getBoard() {
+        return board;
+    }
 
+    /**
+     * Gets the username
+     *
+     * @return the username
+     */
     @Override
-    public String userName(){return name;}
+    public String userName() {
+        return name;
+    }
 
+    /**
+     * Interprets the data representing a move into the data used in the program
+     *
+     * @param msgDetails the details for the move, check GameClient for formatting info
+     * @return the move in an easier to use format
+     */
     //handle the event that the opponent makes a move.
-    public AmazonMove generateMoveFromMsg(Map<String, Object> msgDetails){
+    public AmazonMove generateMoveFromMsg(Map<String, Object> msgDetails) {
         ArrayList<Integer> qcurr = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR);
         ArrayList<Integer> qnew = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.Queen_POS_NEXT);
         ArrayList<Integer> arrow = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.ARROW_POS);
 
-        AmazonSquare sInit = getBoard().getSquare(qcurr.get(1),qcurr.get(0));
-        AmazonSquare sFinal = getBoard().getSquare(qnew.get(1),qnew.get(0));
-        AmazonSquare sArrow = getBoard().getSquare(arrow.get(1),arrow.get(0));
+        AmazonSquare sInit = getBoard().getSquare(qcurr.get(1), qcurr.get(0));
+        AmazonSquare sFinal = getBoard().getSquare(qnew.get(1), qnew.get(0));
+        AmazonSquare sArrow = getBoard().getSquare(arrow.get(1), arrow.get(0));
 
-        AmazonMove move =new AmazonMove(sInit, sFinal, sArrow);
+        AmazonMove move = new AmazonMove(sInit, sFinal, sArrow);
 
         return move;
     }
-
 
 
 }

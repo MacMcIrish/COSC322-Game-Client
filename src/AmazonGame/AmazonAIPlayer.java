@@ -25,21 +25,14 @@ public class AmazonAIPlayer extends AmazonPlayer {
         //connectToServer(name, password);
     }
 
-    @Override
-    public void onLogin() {
-
-        ArrayList<String> rooms = gameClient.getRoomList();
-
-        System.out.println(gameClient.getRoomList().size() + " rooms available");
-        for (String room : gameClient.getRoomList()) System.out.println(room);
-
-        String room = rooms.get(5);
-
-        gameClient.joinRoom(room);
-        System.out.println(userName() + " joined room " + room);
-
-    }
-
+    /**
+     * Responds to the messages sent by the server.
+     * This class is only concerned with the game start and the move messages
+     *
+     * @param messageType The string of the message, from the GameClient class
+     * @param msgDetails The data contained in the string
+     * @return Not sure, probably intended to say whether the event was consumed
+     */
     @Override
     public boolean handleGameMessage(String messageType, Map<String, Object> msgDetails) {
 
@@ -86,8 +79,10 @@ public class AmazonAIPlayer extends AmazonPlayer {
         amazonUI.repaint();
     }
 
-
-
+    /**
+     * Run this method twice to create two instances of players
+     * @param args Args do nothing
+     */
     public static void main(String[] args) {
 
         String uuid = UUID.randomUUID().toString().substring(0, 5);
@@ -95,10 +90,5 @@ public class AmazonAIPlayer extends AmazonPlayer {
         //TODO: replace this with a window that will allow you to select a different player
         AmazonAIPlayer p1 = new AmazonAIPlayer(uuid, uuid, new RandomEvaluator());
     }
-
-    private void toggleTurn() {
-        isMyTurn = !isMyTurn;
-    }
-
 
 }

@@ -32,7 +32,7 @@ public class AmazonMove {
 
     public String toString() {
 
-        return sInit.toStringCoords() + ", " + sFinal.toStringCoords() + ", " + arrow.toStringCoords();
+        return sInit.toString() + ", " + sFinal.toString() + ", " + arrow.toString();
 
 
     }

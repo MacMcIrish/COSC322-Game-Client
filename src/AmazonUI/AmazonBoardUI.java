@@ -67,6 +67,10 @@ public class AmazonBoardUI extends JLayeredPane {
 
     }
 
+    /**
+     * Gets the board associated with the UI
+     * @return The game board
+     */
     private AmazonBoard getBoard() {
         return board;
     }
@@ -306,7 +310,7 @@ public class AmazonBoardUI extends JLayeredPane {
      */
     private class HeatMapUI extends JPanel implements ActionListener {
 
-        Function<AmazonSquare, Integer> mapFunction = null;
+        Function<AmazonSquare, Integer> mapFunction = AmazonSquare::getMobility;
         boolean invert = false;
 
         JRadioButton noneRB, strengthRB, mobilityRB, distanceWhiteQueenRB, distanceBlackQueenRB, distanceWhiteKingRB, distanceBlackKingRB;
@@ -329,7 +333,6 @@ public class AmazonBoardUI extends JLayeredPane {
 
             //Setup the radio buttons
             noneRB = new JRadioButton(NONE);
-            noneRB.setSelected(true);
             noneRB.setActionCommand(NONE);
 
             strengthRB = new JRadioButton(STRENGTH);
@@ -376,6 +379,8 @@ public class AmazonBoardUI extends JLayeredPane {
             radioPanel.add(distanceBlackQueenRB);
             radioPanel.add(distanceWhiteKingRB);
             radioPanel.add(distanceBlackKingRB);
+
+            mobilityRB.setSelected(true);
 
             add(radioPanel, BorderLayout.PAGE_END);
 

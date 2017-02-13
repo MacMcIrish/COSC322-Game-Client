@@ -14,6 +14,10 @@ public class AmazonGameClient extends GameClient {
 
     }
 
+    /**
+     * Packages up the move into the accepted format needed by the GameClient
+     * @param move The move to be performed
+     */
     public void sendMoveMessage(AmazonMove move) {
 
         int[] qf = new int[2];

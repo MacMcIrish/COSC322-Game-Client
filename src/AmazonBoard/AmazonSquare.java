@@ -19,7 +19,12 @@ public class AmazonSquare {
     public static final int DISTANCE_QUEEN = 100;
     public static final int DISTANCE_KING = 1;
 
-
+    /**
+     * The constructor for a square on the board
+     * @param posX The x position [1,10]
+     * @param posY the y position [1,10]
+     * @param pieceType The type of piece (see static variables above)
+     */
     public AmazonSquare(int posX, int posY, int pieceType) {
 
         setPosX(posX);
@@ -29,7 +34,12 @@ public class AmazonSquare {
 
     }
 
-    public String toString() {
+    /**
+     * Generates a detailed string for the particular square in the format:
+     * TODO: add all the different variables to this
+     * @return the detailed string for the square
+     */
+    public String toStringDetailed() {
 
         return "PosX: " + posX +
                 ", PosY: " + posY +
@@ -37,12 +47,16 @@ public class AmazonSquare {
 
     }
 
-    public String toStringCoords() {
+    /**
+     * Creates a simple string output for the position of the square:
+     * (X,Y)
+     * @return the string for the position of the square
+     */
+    public String toString() {
 
         return "(" + posX + ", " + posY + ")";
 
     }
-
 
     public int getPosX() {
         return posX;

@@ -17,11 +17,12 @@ public class AmazonUI extends JFrame {
 
         this.player = player;
 
-        setSize(1300, 800);
+        setSize(800, 800);
+        setLocation(100, 100);
 
         setTitle("Game of the Amazons (COSC 322, UBCO). Player: " + player.userName());
 
-        setLocationRelativeTo(null);
+        //setLocationRelativeTo(null);
 
         Container contentPane = getContentPane();
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.X_AXIS));
