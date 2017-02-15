@@ -1,8 +1,16 @@
 package AmazonGame;
 
 import AmazonEvaluator.AmazonMove;
+import com.smartfoxserver.v2.entities.data.SFSObject;
+import com.smartfoxserver.v2.exceptions.SFSException;
+import sfs2x.client.core.BaseEvent;
+import sfs2x.client.core.IEventListener;
+import sfs2x.client.entities.Room;
+import sfs2x.client.entities.User;
 import ygraphs.ai.smart_fox.games.GameClient;
 import ygraphs.ai.smart_fox.games.GamePlayer;
+
+import java.util.HashMap;
 
 /**
  * Created by D on 2/8/2017.
@@ -34,5 +42,4 @@ public class AmazonGameClient extends GameClient {
 
         sendMoveMessage(qf, qn, ar);
     }
-
 }

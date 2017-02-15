@@ -5,7 +5,7 @@ import AmazonBoard.*;
 /**
  * Created by D on 2/12/2017.
  */
-public class AmazonMove {
+public class AmazonMove{
 
     AmazonSquare sInit, sFinal, arrow;
 
@@ -27,14 +27,27 @@ public class AmazonMove {
         this.sFinal = sFinal;
         this.arrow = arrow;
 
-
     }
 
+    @Override
     public String toString() {
 
         return sInit.toString() + ", " + sFinal.toString() + ", " + arrow.toString();
 
-
     }
 
+    @Override
+    public boolean equals(Object o) {
+
+        boolean equals = false;
+        if (o instanceof AmazonMove) {
+
+            AmazonMove m = (AmazonMove) o;
+            equals = getInitial().equals(m.getInitial());
+            equals &= getFinal().equals(m.getFinal());
+            equals &= getArrow().equals(m.getArrow());
+        }
+
+        return equals;
+    }
 }

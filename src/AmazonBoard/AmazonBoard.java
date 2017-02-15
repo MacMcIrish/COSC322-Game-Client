@@ -16,7 +16,7 @@ import java.util.*;
  * Similar to the 10x12 board in chess:
  * https://chessprogramming.wikispaces.com/10x12+Board
  */
-public class AmazonBoard {
+public class AmazonBoard implements Cloneable {
 
     //For NxM board:
     public static final int minX = 0;   // N = maxX - minX - 1
@@ -142,16 +142,34 @@ public class AmazonBoard {
 
         //TODO: do something with this in UI. Maybe have a button to allow the move after displaying the potential move on the board
 
-        boardCalculator.isMoveValid(move);
+        boardCalculator.isMoveValid(move); //will throw exception if the move is not valid
 
         moveAmazon(move.getInitial(), move.getFinal());
         shootArrow(move.getFinal(), move.getArrow());
         boardCalculator.calculateBoard();
     }
 
-    public void undoMove(AmazonMove move) {
+    /**
+     * Undoes a previous move on the board
+     * Caution: Does not do any error checking, as the move should be valid, so the undo move should also be valid.
+     *
+     * @param move The move to undo
+     */
+    public void undoMove(AmazonMove move)  { //throws InvalidUndoException {
+/*
+        if (move.getInitial().getPieceType() != AmazonSquare.PIECETYPE_AVAILABLE)
+            throw new InvalidUndoException("The initial square is not available.");
 
-       // calculateBoard();
+        if (move.getFinal().getPieceType() != AmazonSquare.PIECETYPE_AMAZON_WHITE || move.getFinal().getPieceType() != AmazonSquare.PIECETYPE_AMAZON_BLACK)
+            throw new InvalidUndoException("The final square is not an amazon.");
+
+        if (move.getArrow().getPieceType() != AmazonSquare.PIECETYPE_ARROW)
+            throw new InvalidUndoException("The arrow square is not an arrow.");*/
+
+        move.getInitial().setPieceType(move.getFinal().getPieceType());
+        move.getArrow().setPieceType(AmazonSquare.PIECETYPE_AVAILABLE);
+        move.getFinal().setPieceType(AmazonSquare.PIECETYPE_AVAILABLE);
+        boardCalculator.calculateBoard();
     }
 
     /**
@@ -163,7 +181,6 @@ public class AmazonBoard {
      * @return Whether the move was successful
      */
     public boolean moveAmazon(AmazonSquare sInit, AmazonSquare sFinal) {
-
 
         switch (sInit.getPieceType()) {
             case AmazonSquare.PIECETYPE_AMAZON_WHITE:
@@ -181,7 +198,6 @@ public class AmazonBoard {
 
         return true;
     }
-
 
     /**
      * Test function, don't use in game - forces an arrow into a square
@@ -364,6 +380,7 @@ public class AmazonBoard {
     /**
      * Prints a ASCII version of the board to the console
      */
+    @Override
     public String toString() {
 
         String[] pieceTypes = getPieceString().split("\n");
@@ -390,7 +407,7 @@ public class AmazonBoard {
 
     }
 
-    public AmazonBoardCalculator getBoardCalculator() {
-        return boardCalculator;
-    }
+    public AmazonBoardCalculator getBoardCalculator() { return boardCalculator; }
+
+
 }

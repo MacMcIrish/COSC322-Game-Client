@@ -21,8 +21,9 @@ public class AmazonSquare {
 
     /**
      * The constructor for a square on the board
-     * @param posX The x position [1,10]
-     * @param posY the y position [1,10]
+     *
+     * @param posX      The x position [1,10]
+     * @param posY      the y position [1,10]
      * @param pieceType The type of piece (see static variables above)
      */
     public AmazonSquare(int posX, int posY, int pieceType) {
@@ -37,6 +38,7 @@ public class AmazonSquare {
     /**
      * Generates a detailed string for the particular square in the format:
      * TODO: add all the different variables to this
+     *
      * @return the detailed string for the square
      */
     public String toStringDetailed() {
@@ -50,8 +52,10 @@ public class AmazonSquare {
     /**
      * Creates a simple string output for the position of the square:
      * (X,Y)
+     *
      * @return the string for the position of the square
      */
+    @Override
     public String toString() {
 
         return "(" + posX + ", " + posY + ")";
@@ -137,7 +141,6 @@ public class AmazonSquare {
 
     }
 
-
     public void resetDistances() {
 
         int reset = Integer.MAX_VALUE;
@@ -155,7 +158,6 @@ public class AmazonSquare {
     public void setSquareStrength(int squareStrength) {
         this.squareStrength = squareStrength;
     }
-
 
     public int getPieceType() {
         return pieceType;
@@ -175,7 +177,6 @@ public class AmazonSquare {
         this.captured = captured;
     }
 
-
     public int getMobility() {
         return mobility;
     }
@@ -184,11 +185,24 @@ public class AmazonSquare {
         this.mobility = mobility;
     }
 
+    @Override
+    public boolean equals(Object o) {
 
-    public boolean equals(AmazonSquare s) {
+        boolean equals = false;
+        if (o instanceof AmazonSquare) {
 
-        return (getPosX() == s.getPosX() && getPosY() == s.getPosY());
+            AmazonSquare s = (AmazonSquare) o;
+            equals = posX == s.posX;
+            equals &= posY == s.posY;
+        }
 
+        return equals;
+    }
+
+    @Override
+    public AmazonSquare clone() {
+
+        return new AmazonSquare(getPosX(), getPosY(), getPieceType());
 
     }
 

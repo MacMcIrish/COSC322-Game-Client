@@ -4,9 +4,7 @@ import AmazonBoard.AmazonSquare;
 import AmazonEvaluator.*;
 import ygraphs.ai.smart_fox.GameMessage;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+import java.awt.event.WindowEvent;
 import java.util.Map;
 import java.util.UUID;
 
@@ -20,7 +18,6 @@ public class AmazonAIPlayer extends AmazonPlayer {
         super(name, password);
         this.evaluator = evaluator;
         amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
-        //connectToServer(name, password);
     }
 
     /**
@@ -88,6 +85,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
             else System.out.println(evaluator.getClass().getSimpleName() + " lost.");
             System.out.println("Terminating client");
             gameClient.logout();
+            amazonUI.dispatchEvent(new WindowEvent(amazonUI, WindowEvent.WINDOW_CLOSING));
             return true;
         }
 
