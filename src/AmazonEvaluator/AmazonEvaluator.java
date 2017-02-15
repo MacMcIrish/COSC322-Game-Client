@@ -61,7 +61,7 @@ public abstract class AmazonEvaluator {
      */
     public AmazonSquare getRandomMove(AmazonSquare square) {
 
-        ArrayList<AmazonSquare> list = board.generateListOfValidMoves(square);
+        ArrayList<AmazonSquare> list = board.getBoardCalculator().generateListOfValidMoves(square);
 
         if (list.size() < 1) return null;
 
@@ -78,7 +78,7 @@ public abstract class AmazonEvaluator {
 
         System.out.println("Checking for random shot from " + sInit + " to " + sFinal);
 
-        ArrayList<AmazonSquare> list = board.generateListOfValidShots(sInit, sFinal);
+        ArrayList<AmazonSquare> list = board.getBoardCalculator().generateListOfValidShots(sInit, sFinal);
 
         System.out.println("Found "+ list.size() + " shots.");
 

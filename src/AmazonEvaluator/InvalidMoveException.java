@@ -6,8 +6,8 @@ package AmazonEvaluator;
 
     public class InvalidMoveException extends Exception {
 
-        public InvalidMoveException(AmazonMove m) {
+        public InvalidMoveException(AmazonMove m, String s) {
 
-            super("Invalid move detected for " + m.toString());
+            super("Invalid move detected for " + m.toString() + ": " + s);
         }
 }

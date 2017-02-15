@@ -242,7 +242,7 @@ public class AmazonBoardUI extends JLayeredPane {
 
                 AmazonSquare target = board.getSquare(xPos, yPos);
 
-
+/*
 
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     if (clicks == 0) {
@@ -296,7 +296,7 @@ public class AmazonBoardUI extends JLayeredPane {
                     parent.repaint();
                     System.out.println(board.toString());
 
-                }
+                }*/
             }
 
 

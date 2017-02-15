@@ -33,14 +33,14 @@ public class MaxMobilityEvaluator extends AmazonEvaluator {
 
             for(AmazonSquare queen : queens) {
 
-                ArrayList<AmazonSquare> moves = board.generateListOfValidMoves(queen);
+                ArrayList<AmazonSquare> moves = board.getBoardCalculator().generateListOfValidMoves(queen);
 
                 if (moves.size() < 1) continue; //Ignore queen if there are not valid moves
 
                 for (AmazonSquare square : moves) {
                     System.out.println("Mobility of " + square.toString() + ": " + square.getMobility() +" vs " + highValue);
 
-                    if (square.getMobility() > highValue) {
+                    if (square.getMobility() > highValue) { //Save the squares with the highest potential mobility
                         highValue = square.getMobility();
                         sFinal = square;
                         sInit = queen;

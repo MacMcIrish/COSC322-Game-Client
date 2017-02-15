@@ -185,4 +185,11 @@ public class AmazonSquare {
     }
 
 
+    public boolean equals(AmazonSquare s) {
+
+        return (getPosX() == s.getPosX() && getPosY() == s.getPosY());
+
+
+    }
+
 }

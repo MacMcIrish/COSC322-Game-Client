@@ -19,7 +19,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         super(name, password);
         this.evaluator = evaluator;
-        amazonUI.setTitle(amazonUI.getTitle()  + ", Type: " + getAIType());
+        amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
         //connectToServer(name, password);
     }
 
@@ -49,35 +49,49 @@ public class AmazonAIPlayer extends AmazonPlayer {
                 takeTurn(); //This is the first move of the game
             }
 
-        } else if (messageType.equals(GameMessage.GAME_ACTION_MOVE))
-
-        { //TODO: remove move limit
+        } else if (messageType.equals(GameMessage.GAME_ACTION_MOVE)) {
 
             respondToMove(msgDetails);
-            if (board.checkForWinCondition()) {
-
-                int[] score = board.calculateScore();
-
-                System.out.println("No more valid moves remain.");
-                System.out.println("Final score: White - " + score[0] + ", Black - " + score[1]);
-                if (score[evaluator.getColor()-1] > score[Math.abs((evaluator.getColor()-1)-1)]) System.out.println("I win");
-                else System.out.println("I lost");
-                System.out.println("Terminating client");
-                gameClient.logout();
-                return true;
-            }
-
+            if (checkForWinCondition()) return true;
             takeTurn();
-        } else if (messageType.equals(GameMessage.GAME_STATE_PLAYER_LOST))
+           // if (checkForWinCondition()) return true;
 
-        {
+        } else if (messageType.equals(GameMessage.GAME_STATE_PLAYER_LOST)) {
+
             System.out.println("Other player has conceded. Terminating Client");
             gameClient.logout();
             return true;
+
         }
 
         return true;
 
+    }
+
+    /**
+     * Checks the board to see if a player has won, then logs out.
+     * TODO: Need to change this based on the procedures for the competition
+     * TODO: Kinda gross how it handles everything, should put the log out stuff on a button
+     *
+     * @return
+     */
+    private boolean checkForWinCondition() {
+
+        if (board.getBoardCalculator().checkForWinCondition()) {
+
+            int[] score = board.getBoardCalculator().calculateScore();
+
+            System.out.println("No more valid moves remain.");
+            System.out.println("Final score: White - " + score[0] + ", Black - " + score[1]);
+            if (score[evaluator.getColor() - 1] > score[Math.abs((evaluator.getColor() - 1) - 1)])
+                System.out.println(evaluator.getClass().getSimpleName() + " wins.");
+            else System.out.println(evaluator.getClass().getSimpleName() + " lost.");
+            System.out.println("Terminating client");
+            gameClient.logout();
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -121,9 +135,11 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
     /**
      * Run this method twice to create two instances of players
-     * Needs parameter in the command line to specify which evaluator to use
+     * If run without command line arguments, will default to the random AI
+     * For command line arguments, look at the order of evaluators. On the command line, specify the index value for
+     * the AI you wish to use.
      *
-     * @param args Args do nothing
+     * @param args int value of the evaluator you want to use
      */
     public static void main(String[] args) {
 
@@ -132,8 +148,14 @@ public class AmazonAIPlayer extends AmazonPlayer {
         //TODO: have the list of acceptable evaluators generated dynamically
         AmazonEvaluator[] evaluators = {new RandomEvaluator(), new MaxMobilityEvaluator(), new BestMobilityEvaluator()};
 
+        int evaluator = 0; //Default is the random evaluator
+
+        if (args.length != 0) evaluator = Integer.parseInt(args[0]);
+
         //TODO: replace this with a window that will allow you to select a different player
-        AmazonAIPlayer p1 = new AmazonAIPlayer(uuid, uuid, evaluators[Integer.parseInt(args[0])]);
+        AmazonAIPlayer p1 = new AmazonAIPlayer(uuid, uuid, evaluators[evaluator]);
+        AmazonAIPlayer p2 = new AmazonAIPlayer(uuid+"2", uuid+"2", new RandomEvaluator());
+        //AmazonAIPlayer p3 = new AmazonAIPlayer(uuid+"3", uuid+"3", new BestMobilityEvaluator());
     }
 
     @Override
