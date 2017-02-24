@@ -22,7 +22,7 @@ public class AmazonUI extends JFrame {
         setLocation(100, 100);
 
         setTitle("Game of the Amazons (COSC 322, UBCO). Player: " + player.userName());
-
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //setLocationRelativeTo(null);
 
         Container contentPane = getContentPane();

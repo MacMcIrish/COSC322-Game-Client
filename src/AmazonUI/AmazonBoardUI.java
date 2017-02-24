@@ -463,6 +463,7 @@ public class AmazonBoardUI extends JLayeredPane {
             if (mapFunction == null) return; //If function is null, prevents painting
 
             int maxValue = 0;
+            int minValue = 0;
 
             //Find max value, so can normalize the array
             //Exclude outer edge
@@ -471,8 +472,9 @@ public class AmazonBoardUI extends JLayeredPane {
 
                     //Remove any of the MAX_VALUE
                     int value = mapFunction.apply(getBoard().getSquare(x, y));
-                    if (value == Integer.MAX_VALUE) value = 0;
+                    if (value == Integer.MAX_VALUE || value == Integer.MIN_VALUE) value = 0;
 
+                    minValue = Math.min(minValue, value);
                     maxValue = Math.max(maxValue, value);
                 }
 
@@ -485,16 +487,24 @@ public class AmazonBoardUI extends JLayeredPane {
 
                     //Remove any of the MAX_VALUE
                     int value = mapFunction.apply(getBoard().getSquare(x, y));
+                    float colorFraction = ((float) maxValue - (value-minValue)) / maxValue;
                     if (value == Integer.MAX_VALUE) g.setColor(Color.gray);
                     else if (invert)
-                        g.setColor(new Color(1 - (((float) maxValue - value) / maxValue), 1 - ((float) value / maxValue), 0));
+                        g.setColor(getHeatMapColor(colorFraction));
                     else
-                        g.setColor(new Color((((float) maxValue - value) / maxValue), ((float) value / maxValue), 0));
+                        g.setColor(getHeatMapColor(1-colorFraction));
 
                     g.drawRect(panel2pixelX(x), panel2pixelY(y), width / rows, width / rows);  //TODO: change fill size
                     g.fillRect(panel2pixelX(x), panel2pixelY(y), width / rows, width / rows);  //TODO: change fill size
 
                 }
+        }
+
+        private Color getHeatMapColor(float colorFraction ) {
+
+
+            return Color.getHSBColor(colorFraction * 0.35f, 1f, 1f);
+
         }
 
     }

@@ -6,6 +6,11 @@ import AmazonEvaluator.MaxMobilityEvaluator;
 import AmazonEvaluator.RandomEvaluator;
 import AmazonGame.AmazonAIPlayer;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,21 +19,22 @@ import java.util.Set;
  */
 public class AmazonAutomatedTest {
 
+    static int  maxGames = 10;
+
     //TODO: have the list of acceptable evaluators generated dynamically
     static AmazonEvaluator[] evaluators = {new RandomEvaluator(), new MaxMobilityEvaluator(), new BestMobilityEvaluator()};
 
     /**
      * Run a number of games will all combination of listed AIs
      *
-     * @param args How many games to run, default is 10
+     * @param args How many games to run
      */
     public static void main(String[] args) {
 
-        int games = 10;
 
-        if (args.length > 0) games = Integer.parseInt(args[0]);
+        if (args.length > 0) maxGames = Integer.parseInt(args[0]);
 
-        AutomatedGameMaker maker = new AutomatedGameMaker(evaluators, games);
+        AutomatedGameMaker maker = new AutomatedGameMaker(evaluators, maxGames);
         maker.outputResults();
 
     }
@@ -36,7 +42,7 @@ public class AmazonAutomatedTest {
     /**
      * This class will automatically play a number of games between the specified AIs
      */
-    public static class AutomatedGameMaker {
+    public static class AutomatedGameMaker implements ActionListener{
 
         int maxGames;
         Set<Game> games;
@@ -74,7 +80,6 @@ public class AmazonAutomatedTest {
             AmazonAIPlayer p1 = new AmazonAIPlayer("p1", "p1", g.p1);
             AmazonAIPlayer p2 = new AmazonAIPlayer("p2", "p2", g.p2);
 
-
             //TODO: Functionality to detect when game is won, or player has conceded/win is not implemented yet.
 
             //If player 1 wins, run addWin();
@@ -100,6 +105,10 @@ public class AmazonAutomatedTest {
             return set;
         }
 
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+        }
 
         /**
          * Simple data structure to hold the evaluators that will play each other, and will track the wins between them
@@ -130,8 +139,6 @@ public class AmazonAutomatedTest {
 
                 return false;
             }
-
         }
-
     }
 }

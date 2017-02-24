@@ -2,8 +2,10 @@ package AmazonGame;
 
 import AmazonBoard.AmazonSquare;
 import AmazonEvaluator.*;
+import AmazonTest.AmazonAutomatedTest;
 import ygraphs.ai.smart_fox.GameMessage;
 
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Map;
 import java.util.UUID;
@@ -18,6 +20,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
         super(name, password);
         this.evaluator = evaluator;
         amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
+
     }
 
     /**
@@ -76,27 +79,40 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         if (board.getBoardCalculator().checkForWinCondition()) {
 
-            int[] score = board.getBoardCalculator().calculateScore();
-
-            System.out.println("No more valid moves remain.");
-            System.out.println("Final score: White - " + score[0] + ", Black - " + score[1]);
-            if (score[evaluator.getColor() - 1] > score[Math.abs((evaluator.getColor() - 1) - 1)])
-                System.out.println(evaluator.getClass().getSimpleName() + " wins.");
-            else System.out.println(evaluator.getClass().getSimpleName() + " lost.");
-            System.out.println("Terminating client");
-            gameClient.logout();
-            amazonUI.dispatchEvent(new WindowEvent(amazonUI, WindowEvent.WINDOW_CLOSING));
+            endGame();
             return true;
         }
 
         return false;
     }
 
+    public boolean endGame() {
+        int[] score = board.getBoardCalculator().calculateScore();
+
+        System.out.println("No more valid moves remain.");
+        System.out.println("Final score: White - " + score[0] + ", Black - " + score[1]);
+
+        boolean didIWin = score[evaluator.getColor() - 1] > score[Math.abs((evaluator.getColor() - 1) - 1)];
+
+        if (didIWin) System.out.println(evaluator.getClass().getSimpleName() + " wins.");
+        else System.out.println(evaluator.getClass().getSimpleName() + " lost.");
+
+        System.out.println("Terminating client");
+        gameClient.logout();
+
+        return didIWin;
+
+    }
+
+
+
+
     /**
      * Take the move data and applies it to the board
      *
      * @param msgDetails The data taken from the move event sent from the server
      */
+
     private void respondToMove(Map<String, Object> msgDetails) {
         AmazonMove gotMove = generateMoveFromMsg(msgDetails);
         System.out.println(System.currentTimeMillis() + ": Got move: " + gotMove.toString());
@@ -115,7 +131,10 @@ public class AmazonAIPlayer extends AmazonPlayer {
     /**
      * Finds an acceptable move via the evaluation function, updates our board, then sends it to the opponent
      */
+
+
     private void takeTurn() {
+
         AmazonMove sentMove = evaluator.evaluateBoard(board);
 
         try {
@@ -141,7 +160,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
      */
     public static void main(String[] args) {
 
-        String uuid = UUID.randomUUID().toString().substring(0, 5);
+        String uuid = UUID.randomUUID().toString().substring(0, 10);
 
         //TODO: have the list of acceptable evaluators generated dynamically
         AmazonEvaluator[] evaluators = {new RandomEvaluator(), new MaxMobilityEvaluator(), new BestMobilityEvaluator()};
