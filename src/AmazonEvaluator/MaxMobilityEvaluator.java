@@ -3,25 +3,25 @@ package AmazonEvaluator;
 import AmazonBoard.*;
 
 import java.util.ArrayList;
-import java.util.Set;
 
 /**
  * Created by D on 2/12/2017.
  */
-public class MaxMobilityEvaluator extends AmazonEvaluator {
+public class MaxMobilityEvaluator extends AmazonEvaluator implements Runnable {
+
+    public MaxMobilityEvaluator() {}
 
     /**
      * Evaluates the board based on maximum mobility. It will move the queen with the highest potential mobility to that spot
-     * @param board The board to evaluate
      * @return
      */
     @Override
-    public AmazonMove evaluateBoard(AmazonBoard board) {
+    public AmazonMove evaluateBoard() {
         this.board = board;
 
         AmazonMove move = null;
 
-        while (move == null) {
+        while (move == null && !kill) {
 
             AmazonSquare sInit = null, sFinal = null, arrow;
 
@@ -60,6 +60,8 @@ public class MaxMobilityEvaluator extends AmazonEvaluator {
             // if (!board.isMoveValid(move)) continue;
 
         }
+
+        bestCurrentMove = move;
 
         return move;
     }

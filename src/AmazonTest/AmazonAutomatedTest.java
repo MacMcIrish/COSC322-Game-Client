@@ -22,7 +22,8 @@ public class AmazonAutomatedTest {
     static int  maxGames = 10;
 
     //TODO: have the list of acceptable evaluators generated dynamically
-    static AmazonEvaluator[] evaluators = {new RandomEvaluator(), new MaxMobilityEvaluator(), new BestMobilityEvaluator()};
+    //TODO: Fix this
+    static AmazonEvaluator[] evaluators = null;//{new RandomEvaluator(), new MaxMobilityEvaluator(), new BestMobilityEvaluator()};
 
     /**
      * Run a number of games will all combination of listed AIs

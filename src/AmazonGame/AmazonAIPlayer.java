@@ -1,27 +1,53 @@
 package AmazonGame;
 
-import AmazonBoard.AmazonSquare;
+import AmazonBoard.*;
 import AmazonEvaluator.*;
 import AmazonTest.AmazonAutomatedTest;
 import ygraphs.ai.smart_fox.GameMessage;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by D on 1/26/2017.
  */
 public class AmazonAIPlayer extends AmazonPlayer {
 
-    public AmazonAIPlayer(String name, String password, AmazonEvaluator evaluator) {
+    int gameMoveTime = 1; //Max length of move in seconds
+    AmazonEvaluator[] evaluators;
+
+
+    public AmazonAIPlayer(String name, String password, AmazonEvaluator[] evaluators) {
 
         super(name, password);
-        this.evaluator = evaluator;
+        this.evaluators = evaluators;
         amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
 
     }
+
+    /**
+     * Same constructor, but will take only 1 evaluator as the input
+     * @param name
+     * @param password
+     * @param evaluator
+     */
+    public AmazonAIPlayer(String name, String password, AmazonEvaluator evaluator) {
+
+        super(name, password);
+        AmazonEvaluator[] evals = new AmazonEvaluator[1];
+        evals[0] = evaluator;
+        this.evaluators = evals;
+        amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
+
+    }
+
 
     /**
      * Responds to the messages sent by the server.
@@ -40,11 +66,11 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
             //Set the evaluator to color, and execute first move if white
             if (((String) msgDetails.get("player-black")).equals(this.userName())) {
-                evaluator.setColor(AmazonSquare.PIECETYPE_AMAZON_BLACK);
+                for (AmazonEvaluator e : evaluators) e.setColor(AmazonSquare.PIECETYPE_AMAZON_BLACK);
                 amazonUI.setTitle(amazonUI.getTitle() + ", Black Player");
             } else {
                 System.out.println("Is first player, finding move.");
-                evaluator.setColor(AmazonSquare.PIECETYPE_AMAZON_WHITE);
+                for (AmazonEvaluator e : evaluators) e.setColor(AmazonSquare.PIECETYPE_AMAZON_WHITE);
                 amazonUI.setTitle(amazonUI.getTitle() + ", White Player");
                 takeTurn(); //This is the first move of the game
             }
@@ -86,21 +112,22 @@ public class AmazonAIPlayer extends AmazonPlayer {
         return false;
     }
 
+    //TODO: fix all of this, will not show who won, due to the evaluators names not being easily accessible
     public boolean endGame() {
         int[] score = board.getBoardCalculator().calculateScore();
 
         System.out.println("No more valid moves remain.");
         System.out.println("Final score: White - " + score[0] + ", Black - " + score[1]);
 
-        boolean didIWin = score[evaluator.getColor() - 1] > score[Math.abs((evaluator.getColor() - 1) - 1)];
+       // boolean didIWin = score[evaluator.getColor() - 1] > score[Math.abs((evaluator.getColor() - 1) - 1)];
 
-        if (didIWin) System.out.println(evaluator.getClass().getSimpleName() + " wins.");
-        else System.out.println(evaluator.getClass().getSimpleName() + " lost.");
+       // if (didIWin) System.out.println(evaluator.getClass().getSimpleName() + " wins.");
+       // else System.out.println(evaluator.getClass().getSimpleName() + " lost.");
 
         System.out.println("Terminating client");
         gameClient.logout();
 
-        return didIWin;
+        return false;//didIWin;
 
     }
 
@@ -120,6 +147,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
         try {
             board.executeMove(gotMove);
         } catch (InvalidMoveException e) {
+            //TODO: implement error handling if the other player sends a faulty move
             e.printStackTrace();
             return;
         }
@@ -132,22 +160,15 @@ public class AmazonAIPlayer extends AmazonPlayer {
      * Finds an acceptable move via the evaluation function, updates our board, then sends it to the opponent
      */
 
-
     private void takeTurn() {
 
-        AmazonMove sentMove = evaluator.evaluateBoard(board);
+        startTimer();
 
-        try {
-            board.executeMove(sentMove);
-        } catch (InvalidMoveException e) {
-            e.printStackTrace();
-            return;
+        for(AmazonEvaluator e : evaluators) {
+
+            e.loadBoard(board);
+            e.run();
         }
-
-        System.out.println(System.currentTimeMillis() + ": Sending move: " + sentMove.toString());
-        moveHistory.add(sentMove);
-        amazonUI.repaint();
-        gameClient.sendMoveMessage(sentMove);
     }
 
     /**
@@ -171,12 +192,50 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         //TODO: replace this with a window that will allow you to select a different player
         AmazonAIPlayer p1 = new AmazonAIPlayer(uuid, uuid, evaluators[evaluator]);
-        AmazonAIPlayer p2 = new AmazonAIPlayer(uuid+"2", uuid+"2", new RandomEvaluator());
+        AmazonAIPlayer p2 = new AmazonAIPlayer(uuid+"2", uuid+"2", evaluators);
         //AmazonAIPlayer p3 = new AmazonAIPlayer(uuid+"3", uuid+"3", new BestMobilityEvaluator());
     }
 
     @Override
     public String getAIType() {
-        return evaluator.getClass().getSimpleName();
+        return evaluators[0].getClass().getSimpleName();
     }
+
+    private void startTimer() {
+        Executors.newSingleThreadScheduledExecutor().schedule(
+                this::selectMove,
+                gameMoveTime,
+                TimeUnit.SECONDS);
+    }
+
+    private void selectMove() {
+
+
+        System.out.println("Time for move has elapsed, getting final move");
+        ArrayList<AmazonMove> bestMoves = new ArrayList<AmazonMove>();
+
+        for(AmazonEvaluator e : evaluators) {
+
+            e.stop();
+            bestMoves.add(e.getBestMove());
+            System.out.println("Best move from " + e.getClass().getSimpleName() + ": " + e.getBestMove().toString());
+
+        }
+
+        //TODO: have something to select the best move
+        AmazonMove sentMove = bestMoves.get(0);
+
+        try {
+            board.executeMove(sentMove);
+        } catch (InvalidMoveException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        System.out.println(System.currentTimeMillis() + ": Sending move: " + sentMove.toString());
+        moveHistory.add(sentMove);
+        amazonUI.repaint();
+        gameClient.sendMoveMessage(sentMove);
+    };
+
 }

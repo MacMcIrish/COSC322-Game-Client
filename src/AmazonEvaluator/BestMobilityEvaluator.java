@@ -1,6 +1,5 @@
 package AmazonEvaluator;
 
-import AmazonBoard.AmazonBoard;
 import AmazonBoard.AmazonSquare;
 
 import java.util.ArrayList;
@@ -8,22 +7,26 @@ import java.util.ArrayList;
 /**
  * Created by D on 2/12/2017.
  */
-public class BestMobilityEvaluator extends AmazonEvaluator {
+public class BestMobilityEvaluator extends AmazonEvaluator implements Runnable {
+
+
+    /**
+     * The threaded evaluator
+     */
+    public BestMobilityEvaluator() {}
 
     /**
      * Evaluates the board based on the best difference between max mobility and current mobility
      *
-     * @param board The board to evaluate
      * @return
      */
 
     @Override
-    public AmazonMove evaluateBoard(AmazonBoard board) {
-        this.board = board;
+    public AmazonMove evaluateBoard() {
 
         AmazonMove move = null;
 
-        while (move == null) {
+        while (move == null && !kill) {
 
             AmazonSquare sInit = null, sFinal = null, arrow;
 
@@ -63,6 +66,8 @@ public class BestMobilityEvaluator extends AmazonEvaluator {
             // if (!board.isMoveValid(move)) continue;
 
         }
+
+        bestCurrentMove = move;
 
         return move;
     }

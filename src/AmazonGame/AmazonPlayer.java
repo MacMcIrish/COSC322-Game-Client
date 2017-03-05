@@ -22,7 +22,7 @@ public abstract class AmazonPlayer extends GamePlayer {
     AmazonBoard board;
     String name = "team6", password = "team6";
     ArrayList<AmazonMove> moveHistory = new ArrayList<AmazonMove>();
-    AmazonEvaluator evaluator;
+    //AmazonEvaluator evaluator;
 
     public AmazonPlayer(String name, String password) {
 

@@ -462,8 +462,11 @@ public class AmazonBoardUI extends JLayeredPane {
 
             if (mapFunction == null) return; //If function is null, prevents painting
 
-            int maxValue = 0;
-            int minValue = 0;
+            int maxValue = Integer.MIN_VALUE;
+            int minValue = Integer.MAX_VALUE;
+
+
+            System.out.println(board.toString());
 
             //Find max value, so can normalize the array
             //Exclude outer edge
@@ -472,10 +475,11 @@ public class AmazonBoardUI extends JLayeredPane {
 
                     //Remove any of the MAX_VALUE
                     int value = mapFunction.apply(getBoard().getSquare(x, y));
-                    if (value == Integer.MAX_VALUE || value == Integer.MIN_VALUE) value = 0;
+                    if (value == Integer.MAX_VALUE || value == Integer.MIN_VALUE || value == 0) continue;
 
                     minValue = Math.min(minValue, value);
                     maxValue = Math.max(maxValue, value);
+
                 }
 
             //System.out.println("MAXVAL FOR ARRAY: " + maxValue);
@@ -487,8 +491,9 @@ public class AmazonBoardUI extends JLayeredPane {
 
                     //Remove any of the MAX_VALUE
                     int value = mapFunction.apply(getBoard().getSquare(x, y));
-                    float colorFraction = ((float) maxValue - (value-minValue)) / maxValue;
-                    if (value == Integer.MAX_VALUE) g.setColor(Color.gray);
+                    float colorFraction = ((float) (maxValue-minValue) - (value-minValue)) / (maxValue-minValue);
+
+                    if (value == Integer.MAX_VALUE || value == Integer.MIN_VALUE || value == 0) g.setColor(Color.gray);
                     else if (invert)
                         g.setColor(getHeatMapColor(colorFraction));
                     else
@@ -500,8 +505,12 @@ public class AmazonBoardUI extends JLayeredPane {
                 }
         }
 
+        /**
+         * Converts the heatmap square fraction to HSB values
+         * @param colorFraction Range of [0,1] where 1 is max value and 0 is min value
+         * @return Color based on the fraction
+         */
         private Color getHeatMapColor(float colorFraction ) {
-
 
             return Color.getHSBColor(colorFraction * 0.35f, 1f, 1f);
 

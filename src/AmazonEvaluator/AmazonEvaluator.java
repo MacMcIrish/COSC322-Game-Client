@@ -7,20 +7,48 @@ import java.util.Random;
 /**
  * Created by D on 2/12/2017.
  */
-public abstract class AmazonEvaluator {
+public abstract class AmazonEvaluator implements Runnable {
 
     AmazonBoard board;
     int playerColor = AmazonSquare.PIECETYPE_AMAZON_WHITE;
 
     public AmazonEvaluator() {}
 
+    //****************Start of Threading Stuff
+
+    AmazonMove bestCurrentMove;
+    volatile boolean kill = false;
+
     /**
-     * This function does all the magic
-     * @param board The board to evaluate
+     * Just need to run this to evaluate the board
+     */
+    @Override
+    public void run() {
+
+        kill = false;
+        evaluateBoard();
+
+    }
+
+    public AmazonMove getBestMove() {return bestCurrentMove;}
+
+    /**
+     * You must
+     */
+    public void stop() {kill = true;}
+
+    //****************End of Threading Stuff
+
+
+    /**
+     * This function does all the magic. Must implement in while(!kill) loop
      * @return The optimal move for the board
      */
-    public abstract AmazonMove evaluateBoard(AmazonBoard board);
+    public abstract AmazonMove evaluateBoard();
 
+    public void loadBoard(AmazonBoard board) {
+        this.board = board;
+    }
     /**
      * Sets the color for the evaluator
      * TODO: should eventually be put in the constructor

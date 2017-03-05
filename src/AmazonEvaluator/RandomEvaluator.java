@@ -2,13 +2,12 @@ package AmazonEvaluator;
 
 import AmazonBoard.*;
 
-import java.util.ArrayList;
-import java.util.Random;
-
 /**
  * Created by D on 2/12/2017.
  */
-public class RandomEvaluator extends AmazonEvaluator {
+public class RandomEvaluator extends AmazonEvaluator implements Runnable {
+
+    public RandomEvaluator() {}
 
     /**
      * Finds a random queen, selects a move from the list of available moves for that queen, then finds another available
@@ -16,11 +15,10 @@ public class RandomEvaluator extends AmazonEvaluator {
      * The function will fail if a queen is selected, but doesn't have any available moves
      * TODO: Add try/catch for handling no movement queens
      *
-     * @param board The board to evaluate
      * @return The randomized move
      */
     @Override
-    public AmazonMove evaluateBoard(AmazonBoard board) {
+    public AmazonMove evaluateBoard() {
         this.board = board;
 
         AmazonMove move = null;
@@ -42,6 +40,8 @@ public class RandomEvaluator extends AmazonEvaluator {
             move = new AmazonMove(sInit, sFinal, arrow);
            // if (!board.isMoveValid(move)) continue;
         }
+
+        bestCurrentMove = move;
 
         return move;
     }
