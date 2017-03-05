@@ -1,17 +1,10 @@
 package AmazonGame;
 
-import AmazonBoard.*;
+import AmazonBoard.AmazonSquare;
 import AmazonEvaluator.*;
-import AmazonTest.AmazonAutomatedTest;
 import ygraphs.ai.smart_fox.GameMessage;
 
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -21,19 +14,34 @@ import java.util.concurrent.TimeUnit;
 public class AmazonAIPlayer extends AmazonPlayer {
 
     int gameMoveTime = 1; //Max length of move in seconds
+
     AmazonEvaluator[] evaluators;
+    double[] weightMatrix;
 
-
-    public AmazonAIPlayer(String name, String password, AmazonEvaluator[] evaluators) {
+    /**
+     *
+     * @param name - Player name
+     * @param password - Player password (unused by server)
+     * @param evaluators - The list of evaluators
+     * @param weightMatrix - The weight matrix for selecting the evaluators, needs to be in same order as evaluators
+     */
+    public AmazonAIPlayer(String name, String password, AmazonEvaluator[] evaluators, double[] weightMatrix) {
 
         super(name, password);
         this.evaluators = evaluators;
+
+        //If the weight matrix doesn't match the evaluators length, ignore and fill with equal chance
+        //TODO: should normalize array
+        if (weightMatrix.length != evaluators.length) Arrays.fill(weightMatrix, 1 / evaluators.length);
+        else this.weightMatrix = weightMatrix;
+
         amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
 
     }
 
     /**
      * Same constructor, but will take only 1 evaluator as the input
+     *
      * @param name
      * @param password
      * @param evaluator
@@ -41,9 +49,13 @@ public class AmazonAIPlayer extends AmazonPlayer {
     public AmazonAIPlayer(String name, String password, AmazonEvaluator evaluator) {
 
         super(name, password);
+
+        //Create a single item array for evaluators and weight matrix
         AmazonEvaluator[] evals = new AmazonEvaluator[1];
         evals[0] = evaluator;
         this.evaluators = evals;
+        weightMatrix = new double[]{1.0};
+
         amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
 
     }
@@ -59,6 +71,8 @@ public class AmazonAIPlayer extends AmazonPlayer {
      */
     @Override
     public boolean handleGameMessage(String messageType, Map<String, Object> msgDetails) {
+
+        //TODO: total turn time is 30s, but timer doesn't actually start until takeTurn() is called. Should figure out how long it takes to do the checking for game moves
 
         System.out.println("Got message: " + messageType);
 
@@ -80,7 +94,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
             respondToMove(msgDetails);
             if (checkForWinCondition()) return true;
             takeTurn();
-           // if (checkForWinCondition()) return true;
+            // if (checkForWinCondition()) return true;
 
         } else if (messageType.equals(GameMessage.GAME_STATE_PLAYER_LOST)) {
 
@@ -119,10 +133,10 @@ public class AmazonAIPlayer extends AmazonPlayer {
         System.out.println("No more valid moves remain.");
         System.out.println("Final score: White - " + score[0] + ", Black - " + score[1]);
 
-       // boolean didIWin = score[evaluator.getColor() - 1] > score[Math.abs((evaluator.getColor() - 1) - 1)];
+        // boolean didIWin = score[evaluator.getColor() - 1] > score[Math.abs((evaluator.getColor() - 1) - 1)];
 
-       // if (didIWin) System.out.println(evaluator.getClass().getSimpleName() + " wins.");
-       // else System.out.println(evaluator.getClass().getSimpleName() + " lost.");
+        // if (didIWin) System.out.println(evaluator.getClass().getSimpleName() + " wins.");
+        // else System.out.println(evaluator.getClass().getSimpleName() + " lost.");
 
         System.out.println("Terminating client");
         gameClient.logout();
@@ -130,9 +144,6 @@ public class AmazonAIPlayer extends AmazonPlayer {
         return false;//didIWin;
 
     }
-
-
-
 
     /**
      * Take the move data and applies it to the board
@@ -157,18 +168,67 @@ public class AmazonAIPlayer extends AmazonPlayer {
     }
 
     /**
-     * Finds an acceptable move via the evaluation function, updates our board, then sends it to the opponent
+     * Starts the timer, and iterates through all of the evaluators, loading the board and starting the evaluation function
      */
 
     private void takeTurn() {
 
-        startTimer();
+        Executors.newSingleThreadScheduledExecutor().schedule(
+                this::sendMove,
+                gameMoveTime,
+                TimeUnit.SECONDS);
 
-        for(AmazonEvaluator e : evaluators) {
-
+        for (AmazonEvaluator e : evaluators) {
             e.loadBoard(board);
             e.run();
         }
+    }
+
+    /**
+     * Gets the best move from all of the evaluators, and sends it to the other player
+     */
+    private void sendMove() {
+
+        System.out.println("Time for move has elapsed, getting final move");
+        ArrayList<AmazonMove> bestMoves = new ArrayList<AmazonMove>();
+
+        //Iterates through all of the evaluators, stops them, and get the best move from all of them
+        for (AmazonEvaluator e : evaluators) {
+
+            e.stop();
+            bestMoves.add(e.getBestMove());
+            System.out.println("Best move from " + e.getClass().getSimpleName() + ": " + e.getBestMove().toString());
+
+        }
+
+        //TODO: Put some logic here, right now just selects from the weight matrix
+
+        double random = new Random().nextDouble();
+
+        AmazonMove bestMove = evaluators[0].getBestMove();
+
+        for (int i = 0; i < weightMatrix.length; i++) {
+
+            if (random < weightMatrix[i]) {
+                bestMove = evaluators[i].getBestMove();
+                break;
+            }
+
+            random -= weightMatrix[i];
+        }
+
+
+        try {
+            board.executeMove(bestMove);
+        } catch (InvalidMoveException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        System.out.println(System.currentTimeMillis() + ": Sending move: " + bestMove.toString());
+        moveHistory.add(bestMove);
+        amazonUI.repaint();
+        gameClient.sendMoveMessage(bestMove);
     }
 
     /**
@@ -192,50 +252,25 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         //TODO: replace this with a window that will allow you to select a different player
         AmazonAIPlayer p1 = new AmazonAIPlayer(uuid, uuid, evaluators[evaluator]);
-        AmazonAIPlayer p2 = new AmazonAIPlayer(uuid+"2", uuid+"2", evaluators);
+        AmazonAIPlayer p2 = new AmazonAIPlayer(uuid + "2", uuid + "2", evaluators, new double[] {0.1,0.3,0.6});
         //AmazonAIPlayer p3 = new AmazonAIPlayer(uuid+"3", uuid+"3", new BestMobilityEvaluator());
     }
 
+    /**
+     * Gets the list of AI types for the player
+     *
+     * @return A string of evaluator class names
+     */
     @Override
     public String getAIType() {
-        return evaluators[0].getClass().getSimpleName();
+
+        String s = "";
+
+        //TODO: fix this so that the last ", " isn't there
+        for (AmazonEvaluator e : evaluators) s += e.getClass().getSimpleName() + ", ";
+
+        return s;
+
     }
-
-    private void startTimer() {
-        Executors.newSingleThreadScheduledExecutor().schedule(
-                this::selectMove,
-                gameMoveTime,
-                TimeUnit.SECONDS);
-    }
-
-    private void selectMove() {
-
-
-        System.out.println("Time for move has elapsed, getting final move");
-        ArrayList<AmazonMove> bestMoves = new ArrayList<AmazonMove>();
-
-        for(AmazonEvaluator e : evaluators) {
-
-            e.stop();
-            bestMoves.add(e.getBestMove());
-            System.out.println("Best move from " + e.getClass().getSimpleName() + ": " + e.getBestMove().toString());
-
-        }
-
-        //TODO: have something to select the best move
-        AmazonMove sentMove = bestMoves.get(0);
-
-        try {
-            board.executeMove(sentMove);
-        } catch (InvalidMoveException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        System.out.println(System.currentTimeMillis() + ": Sending move: " + sentMove.toString());
-        moveHistory.add(sentMove);
-        amazonUI.repaint();
-        gameClient.sendMoveMessage(sentMove);
-    };
 
 }
