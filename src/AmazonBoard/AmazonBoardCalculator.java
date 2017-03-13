@@ -46,7 +46,6 @@ public class AmazonBoardCalculator {
     /**
      * Checks all 6 possible directions of movement/shooting for potential open squares.
      * It will iterate away from the position
-     * TODO: Move this to an evaluation class
      *
      * @param color    equal to 1 if white, equal to 2 if black
      * @param distance How far to check away from the position (typically 10 for queen, 1 for king)
@@ -69,7 +68,6 @@ public class AmazonBoardCalculator {
     /**
      * Checks all 6 possible directions of movement/shooting for potential open squares.
      * It will iterate away from the position
-     * TODO: Move this to an evaluation class
      *
      * @param square The square to check
      * @return A list of available squares
@@ -98,7 +96,6 @@ public class AmazonBoardCalculator {
     /**
      * Checks all 6 possible directions within a possible distance of movement/shooting for potential open squares
      * It will iterate away from the position
-     * TODO: Move this to an evaluation class
      *
      * @param square  The square to check
      * @param maxStep The max step size for movement (typically 10 for queen, 1 for king)
@@ -123,7 +120,6 @@ public class AmazonBoardCalculator {
      * Checks in a direction based on the increment of moveX, moveY and returns a list of available moves
      * ie. from (0,0), if moveX = 1 and moveY = 0, it will increment through (1,0) to (2,0) to (3,0), etc
      * until an invalid move is found.
-     * TODO: Move this to an evaluation class
      *
      * @param posX  The x-position of the square being checked
      * @param posY  The y-position of the square being checked
@@ -158,7 +154,6 @@ public class AmazonBoardCalculator {
 
     /**
      * Checks to see if a game move is valid
-     * TODO: Move this to an evaluation class
      *
      * @param move A game move
      * @return Boolean Whether the movement is valid
@@ -195,7 +190,6 @@ public class AmazonBoardCalculator {
 
     /**
      * Checks to see if a move is on the list of acceptable moves
-     * TODO: Move this to an evaluation class
      *
      * @param sInit  The starting square
      * @param sFinal The final square
@@ -212,7 +206,6 @@ public class AmazonBoardCalculator {
 
     /**
      * Checks to see if a move is on the list of acceptable moves
-     * TODO: Move this to an evaluation class
      *
      * @param sInit  The starting square
      * @param sFinal The final square
@@ -230,7 +223,6 @@ public class AmazonBoardCalculator {
 
     /**
      * Using queen movement, calculates the minimum distances between all squares and the closest amazon on a particular team
-     * TODO: Move this to evaluation class
      *
      * @param color The color of player in which to calculate min distances from
      */
@@ -240,7 +232,6 @@ public class AmazonBoardCalculator {
 
     /**
      * Using king movement, calculates the minimum distances between all squares and the closest amazon on a particular team
-     * TODO: Move this to evaluation class
      *
      * @param color The color of player in which to calculate min distances from
      */
@@ -250,7 +241,6 @@ public class AmazonBoardCalculator {
 
     /**
      * Calculates the minimum distances between all squares and the closest amazon on a particular team
-     * TODO: Move this to evaluation class
      * TODO: Make this actually efficient
      * TODO: Use different variable for queenOrKing - is not particularly descriptive or helpful
      *
@@ -297,7 +287,6 @@ public class AmazonBoardCalculator {
 
     /**
      * Calculates the queen and king distances for both players
-     * TODO: Move this to evaluation class
      */
     public void calculateDistances() {
 
@@ -374,15 +363,58 @@ public class AmazonBoardCalculator {
         return n;
     }
 
+    public static final int MOBILITY_SCORE = 1;
+    public static final int TERRAIN_SCORE = 2;
+    public static final int RELATIVE_TERRAIN_SCORE = 3;
+
+
+    /**
+     *
+     * Based on : https://project.dke.maastrichtuniversity.nl/games/files/msc/Hensgens_thesis.pdf
+     *
+     * @param type
+     * @return
+     */
+    public int[] calculateScore(int type) {
+
+        switch (type) {
+            case TERRAIN_SCORE:
+                return calculateTerrainScore();
+            case RELATIVE_TERRAIN_SCORE:
+                return calculateRelativeTerrainScore();
+            case MOBILITY_SCORE:
+            default:
+                return calculateMobilityScore();
+        }
+
+
+    }
+
+
     /**
      * Calculates the overall score of the board
      * Should be called after calling getDistances methods, otherwise score will be zero
-     * Score = the number of squares where player distance < opponent distance
-     * TODO: int[] return is gross, should change it
+     * Score = total number of possible moves for a player
      *
      * @return An int array where a[0] = whiteScore and a[1] = blackScore
      */
-    public int[] calculateScore() {
+    public int[] calculateMobilityScore() {
+
+        int whiteMoves = generateListOfValidMoves(AmazonSquare.PIECETYPE_AMAZON_WHITE, maxX).size();
+        int blackMoves = generateListOfValidMoves(AmazonSquare.PIECETYPE_AMAZON_BLACK, maxX).size();
+
+        return new int[]{whiteMoves,blackMoves};
+
+    }
+
+    /**
+     * Calculates the overall score of the board
+     * Should be called after calling getDistances methods, otherwise score will be zero
+     * Score = the number of squares where player distance > opponent distance
+     *
+     * @return An int array where a[0] = whiteScore and a[1] = blackScore
+     */
+    public int[] calculateTerrainScore() {
 
         int whiteScore = 0;
         int blackScore = 0;
@@ -399,6 +431,31 @@ public class AmazonBoardCalculator {
         return new int[]{whiteScore, blackScore};
 
     }
+
+    /**
+     * Calculates the overall score of the board
+     * Should be called after calling getDistances methods, otherwise score will be zero
+     * Score = sum of differences of distances in all squares where player distance > opponent distance
+     * TODO: int[] return is gross, should change it
+     *
+     * @return An int array where a[0] = whiteScore and a[1] = blackScore
+     */
+    public int[] calculateRelativeTerrainScore() {
+        int whiteScore = 0;
+        int blackScore = 0;
+
+        for (int x = minX; x <= maxX; x++)
+            for (int y = minY; y <= maxY; y++) {
+                int diff = getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) - getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
+
+                if (diff < 0) whiteScore += diff;
+                else if (diff > 0) blackScore += diff;
+                else continue;
+            }
+
+        return new int[]{whiteScore, blackScore};
+    }
+
 
     /**
      * Calculates mobility of a queen, defined as the

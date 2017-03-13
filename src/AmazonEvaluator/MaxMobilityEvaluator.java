@@ -38,7 +38,7 @@ public class MaxMobilityEvaluator extends AmazonEvaluator implements Runnable {
                 if (moves.size() < 1) continue; //Ignore queen if there are not valid moves
 
                 for (AmazonSquare square : moves) {
-                    System.out.println("Mobility of " + square.toString() + ": " + square.getMobility() +" vs " + highValue);
+                    //System.out.println("Mobility of " + square.toString() + ": " + square.getMobility() +" vs " + highValue);
 
                     if (square.getMobility() > highValue) { //Save the squares with the highest potential mobility
                         highValue = square.getMobility();

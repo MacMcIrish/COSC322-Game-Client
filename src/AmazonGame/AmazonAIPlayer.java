@@ -1,5 +1,6 @@
 package AmazonGame;
 
+import AmazonBoard.AmazonBoardCalculator;
 import AmazonBoard.AmazonSquare;
 import AmazonEvaluator.*;
 import ygraphs.ai.smart_fox.GameMessage;
@@ -17,6 +18,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
     AmazonEvaluator[] evaluators;
     double[] weightMatrix;
+    int playerColor = AmazonSquare.PIECETYPE_AMAZON_WHITE;
 
     /**
      *
@@ -79,12 +81,14 @@ public class AmazonAIPlayer extends AmazonPlayer {
         if (messageType.equals(GameMessage.GAME_ACTION_START)) {
 
             //Set the evaluator to color, and execute first move if white
-            if (((String) msgDetails.get("player-black")).equals(this.userName())) {
-                for (AmazonEvaluator e : evaluators) e.setColor(AmazonSquare.PIECETYPE_AMAZON_BLACK);
+            if (msgDetails.get("player-black").equals(this.userName())) {
+                playerColor = AmazonSquare.PIECETYPE_AMAZON_BLACK;
+                for (AmazonEvaluator e : evaluators) e.setColor(playerColor);
                 amazonUI.setTitle(amazonUI.getTitle() + ", Black Player");
             } else {
                 System.out.println("Is first player, finding move.");
-                for (AmazonEvaluator e : evaluators) e.setColor(AmazonSquare.PIECETYPE_AMAZON_WHITE);
+                playerColor = AmazonSquare.PIECETYPE_AMAZON_WHITE;
+                for (AmazonEvaluator e : evaluators) e.setColor(playerColor);
                 amazonUI.setTitle(amazonUI.getTitle() + ", White Player");
                 takeTurn(); //This is the first move of the game
             }
@@ -113,7 +117,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
      * TODO: Need to change this based on the procedures for the competition
      * TODO: Kinda gross how it handles everything, should put the log out stuff on a button
      *
-     * @return
+     * @return true for win, false for not
      */
     private boolean checkForWinCondition() {
 
@@ -128,7 +132,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
     //TODO: fix all of this, will not show who won, due to the evaluators names not being easily accessible
     public boolean endGame() {
-        int[] score = board.getBoardCalculator().calculateScore();
+        int[] score = board.getBoardCalculator().calculateScore(AmazonBoardCalculator.RELATIVE_TERRAIN_SCORE);
 
         System.out.println("No more valid moves remain.");
         System.out.println("Final score: White - " + score[0] + ", Black - " + score[1]);
@@ -156,7 +160,11 @@ public class AmazonAIPlayer extends AmazonPlayer {
         System.out.println(System.currentTimeMillis() + ": Got move: " + gotMove.toString());
 
         try {
+            if (gotMove.getInitial().getPieceType() == playerColor)
+                throw new InvalidMoveException(gotMove, "Opponent has selected your pawn");
+
             board.executeMove(gotMove);
+
         } catch (InvalidMoveException e) {
             //TODO: implement error handling if the other player sends a faulty move
             e.printStackTrace();
