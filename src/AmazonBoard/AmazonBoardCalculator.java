@@ -384,7 +384,7 @@ public class AmazonBoardCalculator {
                 return calculateRelativeTerrainScore();
             case MOBILITY_SCORE:
             default:
-                return calculateMobilityScore();
+                return calculateMovementScore();
         }
 
 
@@ -398,7 +398,7 @@ public class AmazonBoardCalculator {
      *
      * @return An int array where a[0] = whiteScore and a[1] = blackScore
      */
-    public int[] calculateMobilityScore() {
+    public int[] calculateMovementScore() {
 
         int whiteMoves = generateListOfValidMoves(AmazonSquare.PIECETYPE_AMAZON_WHITE, maxX).size();
         int blackMoves = generateListOfValidMoves(AmazonSquare.PIECETYPE_AMAZON_BLACK, maxX).size();

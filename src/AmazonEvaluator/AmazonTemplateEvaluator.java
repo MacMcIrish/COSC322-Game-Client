@@ -21,6 +21,10 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
         Store the best move of all moves that have been tested in bestCurrentMove.
         When thread is stopped, the player will take the bestCurrentMove and compare it to the other evaluators.
 
+        For each node being traversed, calculate scores via board.getBoardCalculator().calculateScore(int type).
+           For the return, the score index for the player is [playerColor - 1].
+           The type doesn't matter for the function of this method.
+
          */
 
         }
