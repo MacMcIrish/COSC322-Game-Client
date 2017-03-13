@@ -2,6 +2,7 @@ package AmazonBoard;
 
 import AmazonEvaluator.AmazonMove;
 import AmazonEvaluator.InvalidMoveException;
+import ygraphs.ai.smart_fox.games.Amazon;
 
 import java.util.*;
 
@@ -369,7 +370,6 @@ public class AmazonBoardCalculator {
 
 
     /**
-     *
      * Based on : https://project.dke.maastrichtuniversity.nl/games/files/msc/Hensgens_thesis.pdf
      *
      * @param type
@@ -403,14 +403,14 @@ public class AmazonBoardCalculator {
         int whiteMoves = generateListOfValidMoves(AmazonSquare.PIECETYPE_AMAZON_WHITE, maxX).size();
         int blackMoves = generateListOfValidMoves(AmazonSquare.PIECETYPE_AMAZON_BLACK, maxX).size();
 
-        return new int[]{whiteMoves,blackMoves};
+        return new int[]{whiteMoves, blackMoves};
 
     }
 
     /**
      * Calculates the overall score of the board
      * Should be called after calling getDistances methods, otherwise score will be zero
-     * Score = the number of squares where player distance > opponent distance
+     * Score = the number of squares where player distance < opponent distance
      *
      * @return An int array where a[0] = whiteScore and a[1] = blackScore
      */
@@ -435,7 +435,7 @@ public class AmazonBoardCalculator {
     /**
      * Calculates the overall score of the board
      * Should be called after calling getDistances methods, otherwise score will be zero
-     * Score = sum of differences of distances in all squares where player distance > opponent distance
+     * Score = sum of differences of distances in all squares where player distance < opponent distance
      * TODO: int[] return is gross, should change it
      *
      * @return An int array where a[0] = whiteScore and a[1] = blackScore
@@ -446,14 +446,96 @@ public class AmazonBoardCalculator {
 
         for (int x = minX; x <= maxX; x++)
             for (int y = minY; y <= maxY; y++) {
+
                 int diff = getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) - getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
 
-                if (diff < 0) whiteScore += diff;
+                if (Math.abs(diff) > AmazonBoard.maxX)
+                    diff /= Math.abs(diff); //if one player can't reach the spot, give difference of 1 TODO: play with weightings of captured squares
+
+                if (diff < 0) whiteScore += -1 * diff;
                 else if (diff > 0) blackScore += diff;
+                    //ignore if difference is 0
+
                 else continue;
             }
 
         return new int[]{whiteScore, blackScore};
+    }
+
+    public static final double k = 1 / 5;
+    public static final double f1 = 1;
+    public static final double f2 = 1;
+    public static final double f3 = 1;
+    public static final double f4 = 1;
+
+    public double calculateAmazonGScore(int playerColor) {
+
+        double t1 = 0, t2 = 0, c1 = 0, c2 = 0, t = 0, w = 0, m = 0, playerDis, opponentDis;
+        int opponentColor = (playerColor == AmazonSquare.PIECETYPE_AMAZON_WHITE ? AmazonSquare.PIECETYPE_AMAZON_BLACK : AmazonSquare.PIECETYPE_AMAZON_WHITE);
+
+        for (int x = minX; x <= maxX; x++)
+            for (int y = minY; y <= maxY; y++) {
+
+                AmazonSquare s = getSquare(x, y);
+                if (s.getPieceType() != AmazonSquare.PIECETYPE_AVAILABLE) continue;
+
+                //Calculate T1
+                playerDis = s.getQueenDistance(playerColor);
+                opponentDis = s.getQueenDistance(opponentColor);
+
+                if (playerDis == opponentDis && playerDis < AmazonBoard.maxX) t1 += k;
+                else if (playerDis < opponentDis) t1 += 1;
+                else if (playerDis > opponentDis) t1 += -1;
+
+                //Calculate T2
+                playerDis = s.getKingDistance(playerColor);
+                opponentDis = s.getKingDistance(opponentColor);
+
+                if (playerDis == opponentDis && playerDis < AmazonBoard.maxX) t2 += k;
+                else if (playerDis < opponentDis) t2 += 1;
+                else if (playerDis > opponentDis) t2 += -1;
+
+                //Calculate C1
+                c1 += 2 * (
+                        -1 * Math.pow(2, s.getQueenDistance(playerColor)) -
+                                -1 * Math.pow(2, s.getQueenDistance(opponentColor))
+                );
+
+                //Calculate C2
+                c2 += Math.min(
+                        1, Math.max(
+                                -1, (s.getKingDistance(opponentColor) - s.getKingDistance(playerColor)) / 6d
+                        )
+                );
+
+                //Calculate W
+                w += Math.pow(2, Math.abs(
+                        s.getKingDistance(playerColor) - s.getKingDistance(opponentColor)
+                        )
+                );
+            }
+
+        //Calculate t TODO: the function in the paper doesn't really make sense, if fi(w) is partitioned to 1, why bother use w?
+
+        double f = f1 + f2 + f3 + f4;
+
+        t = ((f1 / f) * t1) +
+                ((f2 / f) * t2) +
+                ((f3 / f) * c1) +
+                ((f4 / f) * c2);
+
+        //Calculate m TODO: should use w in the calculation
+        for (AmazonSquare queen : board.getQueenList(opponentColor)) {
+            m += queen.getMobility();
+        }
+
+        for (AmazonSquare queen : board.getQueenList(playerColor)) {
+            m -= queen.getMobility();
+        }
+
+        System.out.printf("t1: %f\nt2: %f\nc1: %f\nc2: %f\nt: %f\nm: %f\nt+m: %f\n", t1, t2, c1, c2, t, m, t + m);
+
+        return t + m;
     }
 
 

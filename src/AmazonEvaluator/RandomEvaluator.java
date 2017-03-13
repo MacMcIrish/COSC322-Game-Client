@@ -41,6 +41,8 @@ public class RandomEvaluator extends AmazonEvaluator implements Runnable {
            // if (!board.isMoveValid(move)) continue;
         }
 
+        board.getBoardCalculator().calculateAmazonGScore(playerColor);
+
         bestCurrentMove = move;
 
         return move;

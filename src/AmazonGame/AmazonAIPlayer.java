@@ -225,7 +225,6 @@ public class AmazonAIPlayer extends AmazonPlayer {
             random -= weightMatrix[i];
         }
 
-
         try {
             board.executeMove(bestMove);
         } catch (InvalidMoveException e) {
@@ -260,7 +259,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         //TODO: replace this with a window that will allow you to select a different player
         AmazonAIPlayer p1 = new AmazonAIPlayer(uuid, uuid, evaluators[evaluator]);
-        AmazonAIPlayer p2 = new AmazonAIPlayer(uuid + "2", uuid + "2", evaluators, new double[] {0.1,0.3,0.6});
+        //AmazonAIPlayer p2 = new AmazonAIPlayer(uuid + "2", uuid + "2", evaluators, new double[] {0.1,0.3,0.6});
         //AmazonAIPlayer p3 = new AmazonAIPlayer(uuid+"3", uuid+"3", new BestMobilityEvaluator());
     }
 

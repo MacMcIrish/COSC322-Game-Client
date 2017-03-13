@@ -466,7 +466,7 @@ public class AmazonBoardUI extends JLayeredPane {
             int minValue = Integer.MAX_VALUE;
 
 
-            System.out.println(board.toString());
+           // System.out.println(board.toString());
 
             //Find max value, so can normalize the array
             //Exclude outer edge
