@@ -9,18 +9,24 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
     @Override
     public AmazonMove evaluateBoard() {
 
+        // All the code between the ***** must be in the evaluateBoard function or nothing will work
+        //**********************************************
+
         while (!kill) { //This is the flag for the thread. Once the timer is up, kill = true, and thread will stop
 
         /*
 
-        All the code goes here
+        All the code for minimax or whatever algorithm goes here
 
-        Store the best current move in bestCurrentMove
+        Store the best move of all moves that have been tested in bestCurrentMove.
+        When thread is stopped, the player will take the bestCurrentMove and compare it to the other evaluators.
 
          */
 
         }
 
         return bestCurrentMove; //doesn't do anything, as nothing needs it as a return
+
+        //*************************************************
     }
 }
