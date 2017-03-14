@@ -30,6 +30,7 @@ public class AmazonBoard implements Cloneable {
     private ArrayList<AmazonSquare> boardSquares = new ArrayList<AmazonSquare>();
 
     AmazonBoardCalculator boardCalculator;
+
     /**
      * Create the game board object, and set the initial positions of all the amazons
      */
@@ -38,6 +39,19 @@ public class AmazonBoard implements Cloneable {
         resetBoard();
         boardCalculator = new AmazonBoardCalculator(this);
         boardCalculator.calculateBoard();
+    }
+
+    public AmazonBoard(AmazonBoard amazonBoard) {
+        for (int i = 0; i < amazonBoard.board.length; i++){
+            for (int j =0; j < amazonBoard.board[i].length; j++){
+                this.board[i][j] = amazonBoard.board[i][j];
+            }
+        }
+        this.whitePieces = new ArrayList<AmazonSquare>(amazonBoard.whitePieces);
+        this.blackPieces = new ArrayList<AmazonSquare>(amazonBoard.blackPieces);
+        this.boardSquares = new ArrayList<AmazonSquare>(amazonBoard.boardSquares);
+        boardCalculator = new AmazonBoardCalculator(this);
+//        boardCalculator.calculateBoard();
     }
 
     /**
@@ -155,7 +169,7 @@ public class AmazonBoard implements Cloneable {
      *
      * @param move The move to undo
      */
-    public void undoMove(AmazonMove move)  { //throws InvalidUndoException {
+    public void undoMove(AmazonMove move) { //throws InvalidUndoException {
 /*
         if (move.getInitial().getPieceType() != AmazonSquare.PIECETYPE_AVAILABLE)
             throw new InvalidUndoException("The initial square is not available.");
@@ -407,7 +421,9 @@ public class AmazonBoard implements Cloneable {
 
     }
 
-    public AmazonBoardCalculator getBoardCalculator() { return boardCalculator; }
+    public AmazonBoardCalculator getBoardCalculator() {
+        return boardCalculator;
+    }
 
 
 }

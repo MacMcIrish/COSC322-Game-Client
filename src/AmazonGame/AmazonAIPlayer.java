@@ -251,15 +251,15 @@ public class AmazonAIPlayer extends AmazonPlayer {
         String uuid = UUID.randomUUID().toString().substring(0, 10);
 
         //TODO: have the list of acceptable evaluators generated dynamically
-        AmazonEvaluator[] evaluators = {new RandomEvaluator(), new MaxMobilityEvaluator(), new BestMobilityEvaluator()};
-
+//        AmazonEvaluator[] evaluators = {new RandomEvaluator(), new MaxMobilityEvaluator(), new BestMobilityEvaluator()};
+        AmazonEvaluator[] evaluators = {new AmazonTemplateEvaluator()};
         int evaluator = 0; //Default is the random evaluator
 
         if (args.length != 0) evaluator = Integer.parseInt(args[0]);
 
         //TODO: replace this with a window that will allow you to select a different player
         AmazonAIPlayer p1 = new AmazonAIPlayer(uuid, uuid, evaluators[evaluator]);
-        //AmazonAIPlayer p2 = new AmazonAIPlayer(uuid + "2", uuid + "2", evaluators, new double[] {0.1,0.3,0.6});
+//        AmazonAIPlayer p2 = new AmazonAIPlayer(uuid + "2", uuid + "2", evaluators, new double[] {0.1,0.3,0.6});
         //AmazonAIPlayer p3 = new AmazonAIPlayer(uuid+"3", uuid+"3", new BestMobilityEvaluator());
     }
 
