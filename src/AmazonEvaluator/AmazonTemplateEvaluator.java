@@ -4,8 +4,10 @@ import AmazonBoard.AmazonBoard;
 import AmazonBoard.AmazonSquare;
 import ygraphs.ai.smart_fox.games.Amazon;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * Created by D on 3/13/2017.
@@ -20,8 +22,8 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
         int score = 0;
         int runningBestScore = 0;
         AmazonMove move = null;
-
-        AmazonBoard currentBoard = new AmazonBoard(board);
+        LinkedList<AmazonMove> moveStack = new LinkedList<AmazonMove>();
+        AmazonBoard currentBoard = new AmazonBoard(this.board);
         while (move == null && !kill) { //This is the flag for the thread. Once the timer is up, kill = true, and thread will stop
 
 
@@ -43,10 +45,14 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
                 if (kill && move != null) break;
                 AmazonSquare queen = queenList.get(i);
                 ArrayList<AmazonSquare> moves = currentBoard.getBoardCalculator().generateListOfValidMoves(queen);
+                moveStack.clear();
+
                 for (AmazonSquare availableMove : moves) {
                     ArrayList<AmazonSquare> shots = currentBoard.getBoardCalculator().generateListOfValidShots(queen, availableMove);
                     for (AmazonSquare shot : shots) {
-                        score = alphaBeta(shot, 1, Integer.MIN_VALUE, Integer.MAX_VALUE, false, currentBoard);
+                        move = new AmazonMove(queen, availableMove, shot);
+                        moveStack.add(move);
+                        score = alphaBeta(queen, 1, Integer.MIN_VALUE, Integer.MAX_VALUE, false, currentBoard, moveStack);
                         if (score > runningBestScore) {
                             runningBestScore = score;
                             AmazonSquare queenMove = board.getSquare(queen.getPosX(), queen.getPosY());
@@ -71,27 +77,29 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
         //*************************************************
     }
 
-    private int alphaBeta(AmazonSquare node, int depth, float alpha, float beta, boolean maximizingPlayer, AmazonBoard oldBoard) {
+    private int alphaBeta(AmazonSquare node, int depth, float alpha, float beta, boolean maximizingPlayer, AmazonBoard oldBoard, LinkedList<AmazonMove> moveStack) {
         int v;
-        AmazonBoard currentBoard = new AmazonBoard(oldBoard);
-        ArrayList<AmazonSquare> children = currentBoard.getBoardCalculator().generateListOfValidMoves(node);
-
+        ArrayList<AmazonSquare> children = oldBoard.getBoardCalculator().generateListOfValidMoves(node);
         if (depth == 0 || children.size() == 0 || kill) {
-            int score = currentBoard.getBoardCalculator().calculateScore(2)[playerColor - 1];
+            // Separate only for debugging
+            int score = oldBoard.getBoardCalculator().calculateScore(2)[playerColor - 1];
+            oldBoard.undoMove(moveStack.removeFirst());
             return score;
         }
 
         if (maximizingPlayer) {
             v = Integer.MIN_VALUE;
             for (AmazonSquare child : children) {
-                ArrayList<AmazonSquare> shots = currentBoard.getBoardCalculator().generateListOfValidShots(node, child);
+                ArrayList<AmazonSquare> shots = oldBoard.getBoardCalculator().generateListOfValidShots(node, child);
                 for (AmazonSquare potentialShot : shots) {
-                    AmazonSquare shot = new AmazonSquare(potentialShot);
-                    AmazonBoard newBoard = new AmazonBoard(currentBoard);
-                    newBoard.moveAmazon(node, child);
-                    newBoard.shootArrow(child, shot);
-                    v = Math.max(v, alphaBeta(child, depth - 1, alpha, beta, false, newBoard));
-                    alpha = Math.max(v, alpha);
+                    AmazonMove move = new AmazonMove(node, child, potentialShot);
+                    try {
+                        oldBoard.executeMove(move);
+                        v = Math.max(v, alphaBeta(child, depth - 1, alpha, beta, false, oldBoard, moveStack));
+                        alpha = Math.max(v, alpha);
+                    } catch (InvalidMoveException e) {
+//                        e.printStackTrace();
+                    }
                     if (beta <= alpha) {
                         break;
                     }
@@ -101,16 +109,20 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
         } else {
             v = Integer.MAX_VALUE;
             for (AmazonSquare child : children) {
-                ArrayList<AmazonSquare> shots = currentBoard.getBoardCalculator().generateListOfValidShots(node, child);
+                ArrayList<AmazonSquare> shots = oldBoard.getBoardCalculator().generateListOfValidShots(node, child);
                 for (AmazonSquare potentialShot : shots) {
-                    AmazonBoard newBoard = new AmazonBoard(currentBoard);
-                    AmazonSquare shot = newBoard.getSquare(potentialShot.getPosX(), potentialShot.getPosY());
-                    AmazonSquare child2 = newBoard.getSquare(child.getPosX(), child.getPosY());
+                    AmazonMove move = new AmazonMove(node, child, potentialShot);
 //                    System.out.println(node + ": Shooting " + child + " to " + shot);
-                    newBoard.moveAmazon(node, child);
-                    newBoard.shootArrow(child, shot);
-                    v = Math.min(v, alphaBeta(child2, depth - 1, alpha, beta, true, newBoard));
-                    beta = Math.min(v, beta);
+//                    oldBoard.moveAmazon(node, child);
+//                    oldBoard.shootArrow(child, shot);
+                    try {
+                        oldBoard.executeMove(move);
+                        moveStack.addFirst(move);
+                        v = Math.min(v, alphaBeta(child, depth - 1, alpha, beta, true, oldBoard, moveStack));
+                        beta = Math.min(v, beta);
+                    } catch (InvalidMoveException e) {
+                        e.printStackTrace();
+                    }
                     if (beta <= alpha) {
                         break;
                     }
