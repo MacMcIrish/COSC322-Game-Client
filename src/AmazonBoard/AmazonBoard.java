@@ -44,7 +44,7 @@ public class AmazonBoard implements Cloneable {
     public AmazonBoard(AmazonBoard amazonBoard) {
         for (int i = 0; i < amazonBoard.board.length; i++){
             for (int j =0; j < amazonBoard.board[i].length; j++){
-                this.board[i][j] = amazonBoard.board[i][j];
+                this.board[i][j] = new AmazonSquare(amazonBoard.board[i][j]);
             }
         }
         this.whitePieces = new ArrayList<AmazonSquare>(amazonBoard.whitePieces);

@@ -5,7 +5,7 @@ package AmazonBoard;
  */
 public class AmazonSquare {
 
-    private int posX, posY, squareStrength = 0, pieceType = 0;
+    private int posX, posY, squareStrength = 0, pieceType;
 
     private int distanceQueenWhite, distanceQueenBlack, distanceKingWhite, distanceKingBlack, mobility = 0;
 
@@ -32,6 +32,23 @@ public class AmazonSquare {
         setPosY(posY);
         setPieceType(pieceType);
         resetDistances();
+
+    }
+
+    /**
+     * A copy constructor for a square on the board
+     *
+     *@param amazonSquare  The section of the board being copied
+     */
+    public AmazonSquare(AmazonSquare amazonSquare){
+        posX = amazonSquare.posX;
+        posY = amazonSquare.posY;
+        pieceType = amazonSquare.pieceType;
+        distanceQueenWhite = amazonSquare.distanceQueenWhite;
+        distanceQueenBlack = amazonSquare.distanceQueenBlack;
+        distanceKingWhite = amazonSquare.distanceKingWhite;
+        distanceKingBlack = amazonSquare.distanceKingBlack;
+        mobility = amazonSquare.mobility;
 
     }
 

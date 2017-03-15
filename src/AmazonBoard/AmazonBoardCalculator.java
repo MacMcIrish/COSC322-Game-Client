@@ -168,7 +168,7 @@ public class AmazonBoardCalculator {
         //Fail if the sInit is not one of the queens
         if (sInit.getPieceType() != AmazonSquare.PIECETYPE_AMAZON_WHITE
                 && sInit.getPieceType() != AmazonSquare.PIECETYPE_AMAZON_BLACK)
-            throw new InvalidMoveException(move, "Initial piece is not an amazon.");
+            throw new InvalidMoveException(move, "Initial piece is not an amazon, piece type " + sInit.getPieceType());
 
         if (sFinal.getPieceType() != AmazonSquare.PIECETYPE_AVAILABLE)
             throw new InvalidMoveException(move, "Final position is not available.");
