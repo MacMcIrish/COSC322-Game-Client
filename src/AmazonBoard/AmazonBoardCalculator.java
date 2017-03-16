@@ -2,7 +2,6 @@ package AmazonBoard;
 
 import AmazonEvaluator.AmazonMove;
 import AmazonEvaluator.InvalidMoveException;
-import ygraphs.ai.smart_fox.games.Amazon;
 
 import java.util.*;
 
@@ -161,15 +160,20 @@ public class AmazonBoardCalculator {
      */
     public boolean isMoveValid(AmazonMove move) throws InvalidMoveException {
 
-        AmazonSquare sInit = move.getInitial();
-        AmazonSquare sFinal = move.getFinal();
-        AmazonSquare sArrow = move.getArrow();
+        AmazonSquare sInit = board.getSquare(move.getInitial().getPosX(), move.getInitial().getPosY());
+        AmazonSquare sFinal = board.getSquare(move.getFinal().getPosX(), move.getFinal().getPosY());
+        AmazonSquare sArrow = board.getSquare(move.getArrow().getPosX(), move.getArrow().getPosY());
 
         //Fail if the sInit is not one of the queens
         if (sInit.getPieceType() != AmazonSquare.PIECETYPE_AMAZON_WHITE
-                && sInit.getPieceType() != AmazonSquare.PIECETYPE_AMAZON_BLACK)
-            throw new InvalidMoveException(move, "Initial piece is not an amazon, piece type " + sInit.getPieceType());
+                && sInit.getPieceType() != AmazonSquare.PIECETYPE_AMAZON_BLACK) {
+            System.out.print("Board: \n\n" + board);
 
+            System.out.println("Can't move " + sInit + " to " + sFinal);
+            System.out.println("Exception queen list: " + board.getQueenList(0));
+            System.out.println("Exception other queen list: " + board.getQueenList(1));
+            throw new InvalidMoveException(move, "Initial piece is not an amazon, piece type " + sInit.getPieceType());
+        }
         if (sFinal.getPieceType() != AmazonSquare.PIECETYPE_AVAILABLE)
             throw new InvalidMoveException(move, "Final position is not available.");
 

@@ -38,9 +38,9 @@ public class AmazonSquare {
     /**
      * A copy constructor for a square on the board
      *
-     *@param amazonSquare  The section of the board being copied
+     * @param amazonSquare The section of the board being copied
      */
-    public AmazonSquare(AmazonSquare amazonSquare){
+    public AmazonSquare(AmazonSquare amazonSquare) {
         posX = amazonSquare.posX;
         posY = amazonSquare.posY;
         pieceType = amazonSquare.pieceType;

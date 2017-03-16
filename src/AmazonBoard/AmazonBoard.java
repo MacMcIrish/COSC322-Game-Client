@@ -179,7 +179,8 @@ public class AmazonBoard implements Cloneable {
 
         if (move.getArrow().getPieceType() != AmazonSquare.PIECETYPE_ARROW)
             throw new InvalidUndoException("The arrow square is not an arrow.");*/
-
+        whitePieces.remove(move.getFinal());
+        whitePieces.add(move.getInitial());
         move.getInitial().setPieceType(move.getFinal().getPieceType());
         move.getArrow().setPieceType(AmazonSquare.PIECETYPE_AVAILABLE);
         move.getFinal().setPieceType(AmazonSquare.PIECETYPE_AVAILABLE);

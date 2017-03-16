@@ -24,8 +24,9 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
         AmazonMove move = null;
         LinkedList<AmazonMove> moveStack = new LinkedList<AmazonMove>();
         AmazonBoard currentBoard = new AmazonBoard(this.board);
+        System.out.println("Board before minimax: " + board);
         while (move == null && !kill) { //This is the flag for the thread. Once the timer is up, kill = true, and thread will stop
-
+            System.out.println("Board at beginning of while: " + board);
 
         /*
 
@@ -43,6 +44,8 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
             // Needs to be like this to combat concurrency exceptions
             for (int i = 0; i < queenList.size(); i++) {
                 if (kill && move != null) break;
+
+                System.out.println("Board at beginning of for: " + board);
                 AmazonSquare queen = queenList.get(i);
                 ArrayList<AmazonSquare> moves = currentBoard.getBoardCalculator().generateListOfValidMoves(queen);
                 moveStack.clear();
@@ -50,18 +53,24 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
                 for (AmazonSquare availableMove : moves) {
                     ArrayList<AmazonSquare> shots = currentBoard.getBoardCalculator().generateListOfValidShots(queen, availableMove);
                     for (AmazonSquare shot : shots) {
+
                         move = new AmazonMove(queen, availableMove, shot);
                         moveStack.add(move);
+                        System.out.println("Board after picking shot: " + board);
                         score = alphaBeta(queen, 1, Integer.MIN_VALUE, Integer.MAX_VALUE, false, currentBoard, moveStack);
+
                         if (score > runningBestScore) {
                             runningBestScore = score;
-                            AmazonSquare queenMove = board.getSquare(queen.getPosX(), queen.getPosY());
-                            AmazonSquare newPost = board.getSquare(availableMove.getPosX(), availableMove.getPosY());
-                            AmazonSquare newShot = board.getSquare(shot.getPosX(), shot.getPosY());
+//                            AmazonSquare queenMove = board.getSquare(queen.getPosX(), queen.getPosY());
+//                            AmazonSquare newPost = board.getSquare(availableMove.getPosX(), availableMove.getPosY());
+//                            AmazonSquare newShot = board.getSquare(shot.getPosX(), shot.getPosY());
 
-                            move = new AmazonMove(queenMove, newPost, newShot);
+                            move = new AmazonMove(queen, availableMove, shot);
+
+                            System.out.println("Board before bestCurrentMove: " + board);
                             bestCurrentMove = move;
-                            System.out.println("Best current move for minimax inside method" + bestCurrentMove + " piece type:" + bestCurrentMove.getInitial().getPieceType());
+//                            System.out.println("Queen list for the board: " + board.getQueenList(getColor()));
+//                            System.out.println("Best current move for minimax inside method" + bestCurrentMove + " piece type:" + bestCurrentMove.getInitial().getPieceType());
                         }
                     }
                 }
@@ -69,9 +78,8 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
         }
 
 //        bestCurrentMove = move;
-        System.out.println("2: Best current move for minimax " + bestCurrentMove + " piece type:" + bestCurrentMove.getInitial().getPieceType());
-        System.out.println("2: Best current move for minimax " + move + " piece type:" + move.getInitial().getPieceType());
-
+//        System.out.println("2: Best current move for minimax " + bestCurrentMove + " piece type:" + bestCurrentMove.getInitial().getPieceType());
+//        System.out.println("2: Best current move for minimax " + move + " piece type:" + move.getInitial().getPieceType());
         return move; //doesn't do anything, as nothing needs it as a return
 
         //*************************************************
@@ -79,13 +87,16 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
 
     private int alphaBeta(AmazonSquare node, int depth, float alpha, float beta, boolean maximizingPlayer, AmazonBoard oldBoard, LinkedList<AmazonMove> moveStack) {
         int v;
+        int missingPieceValue = board.getSquare(1,4).getPieceType();
+        System.out.println(missingPieceValue + "Board at beginning of ab: " + board);
         ArrayList<AmazonSquare> children = oldBoard.getBoardCalculator().generateListOfValidMoves(node);
         if (depth == 0 || children.size() == 0 || kill) {
             // Separate only for debugging
             int score = oldBoard.getBoardCalculator().calculateScore(2)[playerColor - 1];
-            oldBoard.undoMove(moveStack.removeFirst());
+//            oldBoard.undoMove(moveStack.removeFirst());
             return score;
         }
+
 
         if (maximizingPlayer) {
             v = Integer.MIN_VALUE;
@@ -119,9 +130,10 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
                         oldBoard.executeMove(move);
                         moveStack.addFirst(move);
                         v = Math.min(v, alphaBeta(child, depth - 1, alpha, beta, true, oldBoard, moveStack));
+                        oldBoard.undoMove(moveStack.removeFirst());
                         beta = Math.min(v, beta);
                     } catch (InvalidMoveException e) {
-                        e.printStackTrace();
+//                        e.printStackTrace();
                     }
                     if (beta <= alpha) {
                         break;
