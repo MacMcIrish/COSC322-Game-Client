@@ -14,9 +14,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class AmazonAIPlayer extends AmazonPlayer {
 
-    int gameMoveTime = 3; //Max length of move in seconds
-    long turnStartTime = 0; // Current start time of latest move - if 0 then not
-    long turnEndTime;
+    public int gameMoveTime = 3; //Max length of move in seconds
+    public long turnStartTime = 0;
 
     AmazonEvaluator[] evaluators;
     double[] weightMatrix;
@@ -270,7 +269,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         //TODO: replace this with a window that will allow you to select a different player
         AmazonAIPlayer p1 = new AmazonAIPlayer(uuid, uuid, evaluators[evaluator]);
-//        AmazonAIPlayer p2 = new AmazonAIPlayer(uuid + "2", uuid + "2", evaluators, new double[] {0.1,0.3,0.6});
+        //AmazonAIPlayer p2 = new AmazonAIPlayer(uuid + "2", uuid + "2", evaluators, new double[] {0.1,0.3,0.6});
         //AmazonAIPlayer p3 = new AmazonAIPlayer(uuid+"3", uuid+"3", new BestMobilityEvaluator());
     }
 

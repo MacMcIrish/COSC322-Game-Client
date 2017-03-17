@@ -28,8 +28,14 @@ public class AmazonTimerUI {
     }
 
     private class UpdateUITask extends TimerTask {
+        float nSeconds;
 
-        int nSeconds = (player.gameMoveTime);
+//        if (!player.turnStartTime == 0) {
+//            nSeconds = ((float) player.gameMoveTime) - (System.currentTimeMillis() - player.turnStartTime) / 1000;
+//        } else {
+//            nSeconds = 0;
+//        }
+
 
         @Override
         public void run() {
@@ -37,7 +43,7 @@ public class AmazonTimerUI {
 
                 @Override
                 public void run() {
-                    timeLabel.setText(String.valueOf(nSeconds++));
+                    timeLabel.setText(String.valueOf(player.turnStartTime));
                 }
             });
         }

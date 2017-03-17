@@ -31,11 +31,11 @@ public class AmazonUI extends JFrame {
 
         AmazonBoardUI amazonBoardUI = new AmazonBoardUI(player);
         AmazonTimerUI amazonTimerUI = new AmazonTimerUI(player);
-        //AmazonSideUI amazonSideUI = new AmazonSideUI(player);
+        //AmazonSideUI amazonSideUI = new AmazonSideUI(player.gameClient);
 
         //createGameBoard();
         contentPane.add(amazonBoardUI);
-      //  contentPane.add(amazonSideUI);
+        //contentPane.add(amazonSideUI);
 
         setVisible(true);
         repaint();
