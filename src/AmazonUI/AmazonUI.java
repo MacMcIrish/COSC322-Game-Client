@@ -30,6 +30,7 @@ public class AmazonUI extends JFrame {
         //contentPane.add(Box.createVerticalGlue());
 
         AmazonBoardUI amazonBoardUI = new AmazonBoardUI(player);
+        AmazonTimerUI amazonTimerUI = new AmazonTimerUI(player);
         //AmazonSideUI amazonSideUI = new AmazonSideUI(player);
 
         //createGameBoard();

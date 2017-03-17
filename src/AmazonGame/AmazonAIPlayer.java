@@ -15,6 +15,8 @@ import java.util.concurrent.TimeUnit;
 public class AmazonAIPlayer extends AmazonPlayer {
 
     int gameMoveTime = 3; //Max length of move in seconds
+    long turnStartTime = 0; // Current start time of latest move - if 0 then not
+    long turnEndTime;
 
     AmazonEvaluator[] evaluators;
     double[] weightMatrix;
@@ -181,6 +183,8 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
     private void takeTurn() {
 
+        turnStartTime = System.currentTimeMillis();
+
         Executors.newSingleThreadScheduledExecutor().schedule(
                 this::sendMove,
                 gameMoveTime,
@@ -190,6 +194,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
             e.loadBoard(board);
             e.run();
         }
+
     }
 
     /**
@@ -226,6 +231,9 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
             random -= weightMatrix[i];
         }
+
+        turnStartTime = 0;
+        turnEndTime = System.currentTimeMillis();
 
         try {
             System.out.println("Board before move: " + board);
