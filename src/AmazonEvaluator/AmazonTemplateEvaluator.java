@@ -24,10 +24,8 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
         AmazonMove move = null;
         LinkedList<AmazonMove> moveStack = new LinkedList<AmazonMove>();
         AmazonBoard currentBoard = new AmazonBoard(this.board);
-        System.out.println("Board before minimax: " + board);
-        while (move == null && !kill) { //This is the flag for the thread. Once the timer is up, kill = true, and thread will stop
-            System.out.println("Board at beginning of while: " + board);
 
+        while (move == null && !kill) { //This is the flag for the thread. Once the timer is up, kill = true, and thread will stop
         /*
 
         All the code for minimax or whatever algorithm goes here
@@ -54,12 +52,17 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
 
                         move = new AmazonMove(queen, availableMove, shot);
                         moveStack.add(move);
-                        score = alphaBeta(queen, 1, Integer.MIN_VALUE, Integer.MAX_VALUE, false, currentBoard, moveStack);
+                        score = alphaBeta(queen, 1, Integer.MIN_VALUE, Integer.MAX_VALUE, true, currentBoard, moveStack);
 
                         if (score > runningBestScore) {
-                            runningBestScore = score;
+                            AmazonSquare realQueen = board.getSquare(queen.getPosX(), queen.getPosY());
+                            AmazonSquare realMove = board.getSquare(availableMove.getPosX(), availableMove.getPosY());
+                            AmazonSquare realShot = board.getSquare(shot.getPosX(), shot.getPosY());
 
-                            move = new AmazonMove(queen, availableMove, shot);
+                            move = new AmazonMove(realQueen, realMove, realShot);
+                            System.out.println("New score " + score + " > " + runningBestScore + " means " + move + "" +
+                                    "replaces " + bestCurrentMove);
+                            runningBestScore = score;
 
                             bestCurrentMove = move;
                         }
@@ -77,7 +80,7 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
         int v;
         ArrayList<AmazonSquare> children = oldBoard.getBoardCalculator().generateListOfValidMoves(node);
         if (depth == 0 || children.size() == 0 || kill) {
-            return oldBoard.getBoardCalculator().calculateScore(2)[playerColor - 1];
+            return oldBoard.getBoardCalculator().calculateScore(1)[playerColor - 1];
         }
 
         if (maximizingPlayer) {
@@ -88,7 +91,9 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
                     AmazonMove move = new AmazonMove(node, child, potentialShot);
                     try {
                         oldBoard.executeMove(move);
+                        moveStack.addFirst(move);
                         v = Math.max(v, alphaBeta(child, depth - 1, alpha, beta, false, oldBoard, moveStack));
+                        oldBoard.undoMove(moveStack.removeFirst());
                         alpha = Math.max(v, alpha);
                     } catch (InvalidMoveException e) {
 //                        e.printStackTrace();
@@ -105,9 +110,6 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
                 ArrayList<AmazonSquare> shots = oldBoard.getBoardCalculator().generateListOfValidShots(node, child);
                 for (AmazonSquare potentialShot : shots) {
                     AmazonMove move = new AmazonMove(node, child, potentialShot);
-//                    System.out.println(node + ": Shooting " + child + " to " + shot);
-//                    oldBoard.moveAmazon(node, child);
-//                    oldBoard.shootArrow(child, shot);
                     try {
                         oldBoard.executeMove(move);
                         moveStack.addFirst(move);
@@ -115,7 +117,7 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
                         oldBoard.undoMove(moveStack.removeFirst());
                         beta = Math.min(v, beta);
                     } catch (InvalidMoveException e) {
-                        e.printStackTrace();
+//                        e.printStackTrace();
                     }
                     if (beta <= alpha) {
                         break;
