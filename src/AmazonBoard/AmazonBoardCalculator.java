@@ -368,6 +368,7 @@ public class AmazonBoardCalculator {
     public static final int TERRAIN_SCORE = 2;
     public static final int RELATIVE_TERRAIN_SCORE = 3;
     public static final int MOBILITY_SCORE = 4;
+    public static final int AMAZONG_SCORE = 5;
     /**
      * Based on : https://project.dke.maastrichtuniversity.nl/games/files/msc/Hensgens_thesis.pdf
      *
@@ -382,6 +383,8 @@ public class AmazonBoardCalculator {
             case RELATIVE_TERRAIN_SCORE:
                 return calculateRelativeTerrainScore();
             case MOBILITY_SCORE:
+                return calculateMobilityScore();
+            case AMAZONG_SCORE:
                 return calculateMobilityScore();
             case MOVEMENT_SCORE:
             default:
@@ -480,23 +483,37 @@ public class AmazonBoardCalculator {
         return new int[]{whiteScore, blackScore};
     }
 
+    /**
+     * The AmazonG evaluation from Lieberum's paper     *
+     * www.math-info.univ-paris5.fr/~bouzy/ProjetUE3/Amazones-EF.pdf.gz
+     * Should be the best function once we get some arrows on the board
+     *
+     * @return
+     */
+    public int[] calculateAmazonGScore() {
+
+        return new int[]{
+                calculateAmazonGScoreHelper(AmazonSquare.PIECETYPE_AMAZON_WHITE),
+                calculateAmazonGScoreHelper(AmazonSquare.PIECETYPE_AMAZON_BLACK)
+        };
+    }
+
 
 
     public static final double k = 1 / 5;
+    //f values need to be optimized
     public static final double f1 = 1;
     public static final double f2 = 1;
     public static final double f3 = 1;
     public static final double f4 = 1;
 
     /**
-     * The AmazonG evaluation from Lieberum's paper     *
-     * www.math-info.univ-paris5.fr/~bouzy/ProjetUE3/Amazones-EF.pdf.gz
-     * Should be the best function once we get some arrows on the board
+     * Actual function for AmazonG
      *
-     * @param playerColor
-     * @return
+     * @param playerColor - the color of the player to evaluate
+     * @return int value for the AmazonG evaluation function
      */
-    public double calculateAmazonGScore(int playerColor) {
+    public int calculateAmazonGScoreHelper(int playerColor) {
 
         double t1 = 0, t2 = 0, c1 = 0, c2 = 0, t = 0, w = 0, m = 0, playerDis, opponentDis;
         int opponentColor = (playerColor == AmazonSquare.PIECETYPE_AMAZON_WHITE ? AmazonSquare.PIECETYPE_AMAZON_BLACK : AmazonSquare.PIECETYPE_AMAZON_WHITE);
@@ -563,7 +580,7 @@ public class AmazonBoardCalculator {
 
         System.out.printf("t1: %f\nt2: %f\nc1: %f\nc2: %f\nt: %f\nm: %f\nt+m: %f\n", t1, t2, c1, c2, t, m, t + m);
 
-        return t + m;
+        return (int) (t + m);
     }
 
 
