@@ -364,11 +364,10 @@ public class AmazonBoardCalculator {
         return n;
     }
 
-    public static final int MOBILITY_SCORE = 1;
+    public static final int MOVEMENT_SCORE = 1;
     public static final int TERRAIN_SCORE = 2;
     public static final int RELATIVE_TERRAIN_SCORE = 3;
-
-
+    public static final int MOBILITY_SCORE = 4;
     /**
      * Based on : https://project.dke.maastrichtuniversity.nl/games/files/msc/Hensgens_thesis.pdf
      *
@@ -383,11 +382,11 @@ public class AmazonBoardCalculator {
             case RELATIVE_TERRAIN_SCORE:
                 return calculateRelativeTerrainScore();
             case MOBILITY_SCORE:
+                return calculateMobilityScore();
+            case MOVEMENT_SCORE:
             default:
                 return calculateMovementScore();
         }
-
-
     }
 
 
@@ -436,7 +435,6 @@ public class AmazonBoardCalculator {
      * Calculates the overall score of the board
      * Should be called after calling getDistances methods, otherwise score will be zero
      * Score = sum of differences of distances in all squares where player distance < opponent distance
-     * TODO: int[] return is gross, should change it
      *
      * @return An int array where a[0] = whiteScore and a[1] = blackScore
      */
@@ -462,12 +460,42 @@ public class AmazonBoardCalculator {
         return new int[]{whiteScore, blackScore};
     }
 
+    /**
+     * Calculates the score of the board based on the mobility values of each player's queens
+     * Should be the best calculator for early game
+     * Score = Sum of players Queen mobility values
+     *
+     * @return An int array where a[0] = whiteScore and a[1] = blackScore
+     */
+    public int[] calculateMobilityScore() {
+        int whiteScore = 0;
+        int blackScore = 0;
+
+        for(AmazonSquare s : board.getQueenList(AmazonSquare.PIECETYPE_AMAZON_WHITE))
+            whiteScore += s.getMobility();
+
+        for(AmazonSquare s : board.getQueenList(AmazonSquare.PIECETYPE_AMAZON_BLACK))
+            blackScore += s.getMobility();
+
+        return new int[]{whiteScore, blackScore};
+    }
+
+
+
     public static final double k = 1 / 5;
     public static final double f1 = 1;
     public static final double f2 = 1;
     public static final double f3 = 1;
     public static final double f4 = 1;
 
+    /**
+     * The AmazonG evaluation from Lieberum's paper     *
+     * www.math-info.univ-paris5.fr/~bouzy/ProjetUE3/Amazones-EF.pdf.gz
+     * Should be the best function once we get some arrows on the board
+     *
+     * @param playerColor
+     * @return
+     */
     public double calculateAmazonGScore(int playerColor) {
 
         double t1 = 0, t2 = 0, c1 = 0, c2 = 0, t = 0, w = 0, m = 0, playerDis, opponentDis;
@@ -524,7 +552,7 @@ public class AmazonBoardCalculator {
                 ((f3 / f) * c1) +
                 ((f4 / f) * c2);
 
-        //Calculate m TODO: should use w in the calculation
+        //Calculate M TODO: should use w in the calculation
         for (AmazonSquare queen : board.getQueenList(opponentColor)) {
             m += queen.getMobility();
         }
