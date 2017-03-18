@@ -15,6 +15,8 @@ public class MaxMobilityEvaluator extends AmazonEvaluator implements Runnable {
      * Evaluates the board based on maximum mobility. It will move the queen with the highest potential mobility to that spot
      * @return
      */
+
+
     @Override
     public AmazonMove evaluateBoard() {
         this.board = board;

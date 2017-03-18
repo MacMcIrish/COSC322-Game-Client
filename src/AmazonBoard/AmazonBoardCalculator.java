@@ -371,6 +371,7 @@ public class AmazonBoardCalculator {
     public static final int MOBILITY_SCORE = 1;
     public static final int TERRAIN_SCORE = 2;
     public static final int RELATIVE_TERRAIN_SCORE = 3;
+    static final int DELTA_MOBILITY_SCORE = 4;
 
 
     /**
@@ -386,6 +387,8 @@ public class AmazonBoardCalculator {
                 return calculateTerrainScore();
             case RELATIVE_TERRAIN_SCORE:
                 return calculateRelativeTerrainScore();
+            case DELTA_MOBILITY_SCORE:
+                return calculateDeltaTerrainScore();
             case MOBILITY_SCORE:
             default:
                 return calculateMovementScore();
@@ -434,6 +437,35 @@ public class AmazonBoardCalculator {
 
         return new int[]{whiteScore, blackScore};
 
+    }
+
+    /**
+     * Minimal Distance Delta Calculator
+     * Calculates the difference in moves for each colour for each square and sums them
+     *
+     * @return Integer value for the score of the current table
+     */
+
+    public int[] calculateDeltaTerrainScore() {
+        int whiteScore = 0;
+        int blackScore = 0;
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                int diff = getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) -
+                        getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
+
+                if (diff > 0) {
+                    whiteScore += 1;
+                    blackScore -= 1;
+                } else if (diff > 0){
+                    whiteScore -= 1;
+                    blackScore += 1;
+                }
+
+            }
+        }
+
+        return new int[]{whiteScore, blackScore};
     }
 
     /**
