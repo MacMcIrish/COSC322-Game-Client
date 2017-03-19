@@ -387,8 +387,8 @@ public class AmazonBoardCalculator {
                 return calculateTerrainScore();
             case RELATIVE_TERRAIN_SCORE:
                 return calculateRelativeTerrainScore();
-            case DELTA_MOBILITY_SCORE:
-                return calculateDeltaTerrainScore();
+//            case DELTA_MOBILITY_SCORE:
+//                return calculateDeltaTerrainScore();
             case MOBILITY_SCORE:
             default:
                 return calculateMovementScore();
@@ -446,26 +446,25 @@ public class AmazonBoardCalculator {
      * @return Integer value for the score of the current table
      */
 
-    public int[] calculateDeltaTerrainScore() {
-        int whiteScore = 0;
-        int blackScore = 0;
+    public double[] calculateDeltaTerrainScore() {
+        double whiteScore = 0;
+        double blackScore = 0;
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
-                int diff = getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) -
-                        getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
+                double localWhite = board.getSquare(x, y).getWhiteQueenDistance();
+                double localBlack = board.getSquare(x, y).getBlackQueenDistance();
 
-                if (diff > 0) {
-                    whiteScore += 1;
-                    blackScore -= 1;
-                } else if (diff > 0){
-                    whiteScore -= 1;
-                    blackScore += 1;
-                }
+//                double diff = localWhite - localBlack;
+
+                double cI = Math.pow(2, (-1) * localWhite) - Math.pow(2, (-1) * localBlack);
+
+                whiteScore += cI;
+                blackScore += cI;
 
             }
         }
 
-        return new int[]{whiteScore, blackScore};
+        return new double[]{2 * whiteScore, 2 * blackScore};
     }
 
     /**
