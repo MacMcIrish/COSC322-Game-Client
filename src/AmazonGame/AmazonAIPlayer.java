@@ -199,7 +199,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         System.out.println("Time for move has elapsed, getting final move");
         ArrayList<AmazonMove> bestMoves = new ArrayList<AmazonMove>();
-        System.out.println("Board before evaluating: " + board);
+//        System.out.println("Board before evaluating: " + board);
 
         //Iterates through all of the evaluators, stops them, and get the best move from all of them
         for (AmazonEvaluator e : evaluators) {

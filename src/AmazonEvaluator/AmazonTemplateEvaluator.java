@@ -63,7 +63,7 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
                     try {
                         currentBoard.executeMove(move);
                         moveStack.add(move);
-                        score = alphaBetaMove(currentBoard, 1, Double.MIN_VALUE, Double.MAX_VALUE, false, moveStack);
+                        score = alphaBetaMove(currentBoard, 3, Double.MIN_VALUE, Double.MAX_VALUE, false, moveStack, iterations.increment());
                         currentBoard.undoMove(move);
 
                         if (score < runningBestScore) {
@@ -185,7 +185,7 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
         }
     }
 
-    public double alphaBetaMove(AmazonBoard node, int depth, double alpha, double beta, boolean maximizingPlayer, LinkedList<AmazonMove> moveStack) {
+    public double alphaBetaMove(AmazonBoard node, int depth, double alpha, double beta, boolean maximizingPlayer, LinkedList<AmazonMove> moveStack, AmazonIterations iterations) {
         double v = 0;
         int otherPlayerColour = AmazonSquare.PIECETYPE_AMAZON_WHITE == getColor() ? 2 : 1;
 
@@ -195,7 +195,7 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
         if (kill) {
             return v;
         } else if (depth == 0) {
-            return node.getBoardCalculator().calculateDeltaTerrainScore()[getColor() - 1];
+            return node.getBoardCalculator().calculateScore(3)[getColor() - 1];
         }
 
         if (maximizingPlayer) {
@@ -213,7 +213,7 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
                     try {
                         node.executeMove(move);
                         moveStack.addFirst(move);
-                        v = Math.max(v, alphaBetaMove(node, depth - 1, alpha, beta, false, moveStack));
+                        v = Math.max(v, alphaBetaMove(node, depth - 1, alpha, beta, false, moveStack, iterations.increment()));
                         alpha = Math.max(v, alpha);
                         node.undoMove(moveStack.removeFirst());
 
@@ -240,7 +240,7 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
                     try {
                         node.executeMove(move);
                         moveStack.addFirst(move);
-                        v = Math.min(v, alphaBetaMove(node, depth - 1, alpha, beta, true, moveStack));
+                        v = Math.min(v, alphaBetaMove(node, depth - 1, alpha, beta, true, moveStack, iterations.increment()));
                         beta = Math.min(beta, v);
                         node.undoMove(moveStack.removeFirst());
                     } catch (InvalidMoveException ignored) {
