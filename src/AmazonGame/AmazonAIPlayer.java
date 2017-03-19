@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AmazonAIPlayer extends AmazonPlayer {
 
-    int gameMoveTime = 30; //Max length of move in seconds
+    int gameMoveTime = 1; //Max length of move in seconds
 
     AmazonEvaluator[] evaluators;
     double[] weightMatrix;
@@ -215,7 +215,6 @@ public class AmazonAIPlayer extends AmazonPlayer {
         double random = new Random().nextDouble();
 
         AmazonMove bestMove = evaluators[0].getBestMove();
-        System.out.println("Board before weightMatrix: " + board);
 
         for (int i = 0; i < weightMatrix.length; i++) {
 
@@ -228,7 +227,6 @@ public class AmazonAIPlayer extends AmazonPlayer {
         }
 
         try {
-            System.out.println("Board before move: " + board);
             board.executeMove(bestMove);
         } catch (InvalidMoveException e) {
             e.printStackTrace();

@@ -54,8 +54,6 @@ public class AmazonBoard implements Cloneable {
                 this.board[i][j] = square;
             }
         }
-//        this.whitePieces = new ArrayList<AmazonSquare>(amazonBoard.whitePieces);
-//        this.blackPieces = new ArrayList<AmazonSquare>(amazonBoard.blackPieces);
         this.boardSquares = new ArrayList<AmazonSquare>(amazonBoard.boardSquares);
         boardCalculator = new AmazonBoardCalculator(this);
 //        boardCalculator.calculateBoard();
@@ -186,8 +184,13 @@ public class AmazonBoard implements Cloneable {
 
         if (move.getArrow().getPieceType() != AmazonSquare.PIECETYPE_ARROW)
             throw new InvalidUndoException("The arrow square is not an arrow.");*/
-        whitePieces.remove(move.getFinal());
-        whitePieces.add(move.getInitial());
+        if (move.getFinal().getPieceType() == AmazonSquare.PIECETYPE_AMAZON_WHITE) {
+            whitePieces.remove(move.getFinal());
+            whitePieces.add(move.getInitial());
+        } else {
+            blackPieces.remove(move.getFinal());
+            blackPieces.add(move.getInitial());
+        }
         if (move.getInitial() == move.getArrow()) {
             // After moving, the arrow was fired into the initial spot
             move.getInitial().setPieceType(move.getFinal().getPieceType());
