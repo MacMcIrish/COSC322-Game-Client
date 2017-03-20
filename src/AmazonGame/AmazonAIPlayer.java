@@ -14,8 +14,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class AmazonAIPlayer extends AmazonPlayer {
 
-    int gameMoveTime = 30; //Max length of move in seconds
-    public long turnStartTime = 0;
+    int gameMoveTime; //Max length of move in seconds
+    long turnStartTime;
+    long turnEndTime;
 
     AmazonEvaluator[] evaluators;
     double[] weightMatrix;
@@ -38,6 +39,9 @@ public class AmazonAIPlayer extends AmazonPlayer {
         if (weightMatrix.length != evaluators.length) Arrays.fill(weightMatrix, 1 / evaluators.length);
         else this.weightMatrix = weightMatrix;
 
+        this.turnStartTime = 0;
+        this.gameMoveTime = 30;
+
         amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
 
     }
@@ -58,6 +62,10 @@ public class AmazonAIPlayer extends AmazonPlayer {
         evals[0] = evaluator;
         this.evaluators = evals;
         weightMatrix = new double[]{1.0};
+
+        this.turnStartTime = 0;
+        this.turnEndTime = 0;
+        this.gameMoveTime = 30;
 
         amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
 
@@ -182,8 +190,8 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
     private void takeTurn() {
 
-        turnStartTime = System.currentTimeMillis();
-        System.out.println(turnStartTime + "ansdjkasndjkasndasndkjas");
+        this.turnStartTime = System.currentTimeMillis();
+        System.out.println(turnStartTime / 1000);
 
         Executors.newSingleThreadScheduledExecutor().schedule(
                 this::sendMove,
@@ -231,8 +239,8 @@ public class AmazonAIPlayer extends AmazonPlayer {
             random -= weightMatrix[i];
         }
 
-        turnStartTime = 0;
-        turnEndTime = System.currentTimeMillis();
+        this.turnStartTime = 0;
+        this.turnEndTime = System.currentTimeMillis();
 
         try {
             board.executeMove(bestMove);
@@ -267,7 +275,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
         if (args.length != 0) evaluator = Integer.parseInt(args[0]);
 
         //TODO: replace this with a window that will allow you to select a different player
-        AmazonAIPlayer p1 = new AmazonAIPlayer(uuid, uuid, evaluators[evaluator]);
+        AmazonAIPlayer p1 = new AmazonAIPlayer(uuid, uuid, new BestMobilityEvaluator());
         //AmazonAIPlayer p2 = new AmazonAIPlayer(uuid + "2", uuid + "2", evaluators, new double[] {0.1,0.3,0.6});
         AmazonAIPlayer p3 = new AmazonAIPlayer(uuid+"3", uuid+"3", new BestMobilityEvaluator());
     }
@@ -292,6 +300,16 @@ public class AmazonAIPlayer extends AmazonPlayer {
     @Override
     public long getTurnStartTime() {
         return turnStartTime;
+    }
+
+    @Override
+    public int getGameMoveTime() {
+        return gameMoveTime;
+    }
+
+    @Override
+    public long getTurnEndTime() {
+        return turnEndTime;
     }
 
 }

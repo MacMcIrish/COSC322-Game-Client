@@ -34,6 +34,7 @@ public abstract class AmazonPlayer extends GamePlayer {
         this.password = password;
         board = new AmazonBoard();
         amazonUI = new AmazonUI(this);
+        System.out.println("ASDASDASDASDASd");
         connectToServer(name, password);
 
     }
@@ -117,4 +118,6 @@ public abstract class AmazonPlayer extends GamePlayer {
     public abstract String getAIType();
 
     public abstract long getTurnStartTime();
+    public abstract long getTurnEndTime();
+    public abstract int getGameMoveTime();
 }
