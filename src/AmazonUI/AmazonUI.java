@@ -18,7 +18,7 @@ public class AmazonUI extends JFrame {
 
         this.player = player;
 
-        setSize(800, 800);
+        setSize(900, 800);
         setLocation(100, 100);
 
         setTitle("Game of the Amazons (COSC 322, UBCO). Player: " + player.userName());
@@ -31,7 +31,6 @@ public class AmazonUI extends JFrame {
 
         AmazonBoardUI amazonBoardUI = new AmazonBoardUI(player);
         //AmazonSideUI amazonSideUI = new AmazonSideUI(player.gameClient);
-        AmazonTimerUI amazonTimerUI = new AmazonTimerUI(this.player);
 
         //createGameBoard();
         contentPane.add(amazonBoardUI);

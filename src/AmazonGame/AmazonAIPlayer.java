@@ -40,7 +40,8 @@ public class AmazonAIPlayer extends AmazonPlayer {
         else this.weightMatrix = weightMatrix;
 
         this.turnStartTime = 0;
-        this.gameMoveTime = 30;
+        this.turnEndTime = 0;
+        this.gameMoveTime = 10;
 
         amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
 
@@ -65,7 +66,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         this.turnStartTime = 0;
         this.turnEndTime = 0;
-        this.gameMoveTime = 30;
+        this.gameMoveTime = 10;
 
         amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
 
@@ -316,6 +317,11 @@ public class AmazonAIPlayer extends AmazonPlayer {
     @Override
     public long getTurnEndTime() {
         return turnEndTime;
+    }
+
+    @Override
+    public int getPlayerColor() {
+        return playerColor;
     }
 
 }

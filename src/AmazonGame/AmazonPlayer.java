@@ -21,6 +21,7 @@ public abstract class AmazonPlayer extends GamePlayer {
     public int gameMoveTime; //Max length of move in seconds
     public long turnStartTime; // Current start time of latest move - if 0 then not
     public long turnEndTime;
+    public int playerColor;
 
     AmazonUI amazonUI;
     AmazonBoard board;
@@ -34,7 +35,6 @@ public abstract class AmazonPlayer extends GamePlayer {
         this.password = password;
         board = new AmazonBoard();
         amazonUI = new AmazonUI(this);
-        System.out.println("ASDASDASDASDASd");
         connectToServer(name, password);
 
     }
@@ -120,4 +120,5 @@ public abstract class AmazonPlayer extends GamePlayer {
     public abstract long getTurnStartTime();
     public abstract long getTurnEndTime();
     public abstract int getGameMoveTime();
+    public abstract int getPlayerColor();
 }

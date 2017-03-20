@@ -47,4 +47,7 @@ public class AmazonHumanPlayer extends AmazonPlayer {
     public int getGameMoveTime() {
         return 100;
     }
+
+    @Override
+    public int getPlayerColor() { return 1; }
 }
