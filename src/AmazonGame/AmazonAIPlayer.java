@@ -132,7 +132,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
     private boolean checkForWinCondition() {
 
         if (board.getBoardCalculator().checkForWinCondition()) {
-
+            System.out.println(board);
             endGame();
             return true;
         }
@@ -221,7 +221,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
             e.stop();
             while(e.getBestMove() == null)
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }

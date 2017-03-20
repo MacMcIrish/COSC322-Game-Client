@@ -59,4 +59,9 @@ public class AmazonNode {
     public ArrayList<AmazonSquare> generateQueens(int color) {
         return nodeBoard.getQueenList(color);
     }
+
+    @Override
+    public String toString(){
+        return nodeMove.toString();
+    }
 }
