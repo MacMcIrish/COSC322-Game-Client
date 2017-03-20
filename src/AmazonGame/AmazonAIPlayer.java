@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AmazonAIPlayer extends AmazonPlayer {
 
-    public int gameMoveTime = 3; //Max length of move in seconds
+    int gameMoveTime = 30; //Max length of move in seconds
     public long turnStartTime = 0;
 
     AmazonEvaluator[] evaluators;

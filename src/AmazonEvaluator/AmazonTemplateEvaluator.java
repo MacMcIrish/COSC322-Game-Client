@@ -19,11 +19,12 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
         // All the code between the ***** must be in the evaluateBoard function or nothing will work
         //**********************************************
 
-        int score;
-        int runningBestScore = 0;
+        double score;
+        double runningBestScore = -1;
         AmazonMove move = null;
         LinkedList<AmazonMove> moveStack = new LinkedList<AmazonMove>();
         AmazonBoard currentBoard = new AmazonBoard(this.board);
+        AmazonIterations iterations = new AmazonIterations();
 
         while (move == null && !kill) { //This is the flag for the thread. Once the timer is up, kill = true, and thread will stop
         /*
@@ -52,8 +53,10 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
 
                         move = new AmazonMove(queen, availableMove, shot);
                         moveStack.add(move);
-                        score = alphaBeta(queen, 1, Integer.MIN_VALUE, Integer.MAX_VALUE, true, currentBoard, moveStack);
-
+                        long in = System.currentTimeMillis();
+                        score = alphaBeta(queen, 1, Integer.MIN_VALUE, Integer.MAX_VALUE, false, currentBoard, moveStack, iterations.increment());
+                        long fin = System.currentTimeMillis() - in;
+                        System.out.println("That took: " + fin + " seconds for " + move + " and iterations " + iterations);
                         if (score > runningBestScore) {
                             AmazonSquare realQueen = board.getSquare(queen.getPosX(), queen.getPosY());
                             AmazonSquare realMove = board.getSquare(availableMove.getPosX(), availableMove.getPosY());
@@ -70,17 +73,19 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
                 }
             }
         }
-
+        System.out.println("Iterations: " + iterations);
         return move; //doesn't do anything, as nothing needs it as a return
 
         //*************************************************
     }
 
-    private int alphaBeta(AmazonSquare node, int depth, float alpha, float beta, boolean maximizingPlayer, AmazonBoard oldBoard, LinkedList<AmazonMove> moveStack) {
-        int v;
+    private double alphaBeta(AmazonSquare node, int depth, double alpha, double beta, boolean maximizingPlayer, AmazonBoard oldBoard, LinkedList<AmazonMove> moveStack, AmazonIterations iterations) {
+        double v;
+
+        long i = System.currentTimeMillis();
         ArrayList<AmazonSquare> children = oldBoard.getBoardCalculator().generateListOfValidMoves(node);
         if (depth == 0 || children.size() == 0 || kill) {
-            return oldBoard.getBoardCalculator().calculateScore(1)[playerColor - 1];
+            return oldBoard.getBoardCalculator().calculateDeltaTerrainScore()[playerColor - 1];
         }
 
         if (maximizingPlayer) {
@@ -88,11 +93,13 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
             for (AmazonSquare child : children) {
                 ArrayList<AmazonSquare> shots = oldBoard.getBoardCalculator().generateListOfValidShots(node, child);
                 for (AmazonSquare potentialShot : shots) {
+                    if (kill)
+                        return v;
                     AmazonMove move = new AmazonMove(node, child, potentialShot);
                     try {
                         oldBoard.executeMove(move);
                         moveStack.addFirst(move);
-                        v = Math.max(v, alphaBeta(child, depth - 1, alpha, beta, false, oldBoard, moveStack));
+                        v = Math.max(v, alphaBeta(child, depth - 1, alpha, beta, false, oldBoard, moveStack, iterations.increment()));
                         oldBoard.undoMove(moveStack.removeFirst());
                         alpha = Math.max(v, alpha);
                     } catch (InvalidMoveException e) {
@@ -109,11 +116,14 @@ public class AmazonTemplateEvaluator extends AmazonEvaluator {
             for (AmazonSquare child : children) {
                 ArrayList<AmazonSquare> shots = oldBoard.getBoardCalculator().generateListOfValidShots(node, child);
                 for (AmazonSquare potentialShot : shots) {
+                    long f = System.currentTimeMillis() - i;
+                    if (kill)
+                        return v;
                     AmazonMove move = new AmazonMove(node, child, potentialShot);
                     try {
                         oldBoard.executeMove(move);
                         moveStack.addFirst(move);
-                        v = Math.min(v, alphaBeta(child, depth - 1, alpha, beta, true, oldBoard, moveStack));
+                        v = Math.min(v, alphaBeta(child, depth - 1, alpha, beta, true, oldBoard, moveStack, iterations.increment()));
                         oldBoard.undoMove(moveStack.removeFirst());
                         beta = Math.min(v, beta);
                     } catch (InvalidMoveException e) {
