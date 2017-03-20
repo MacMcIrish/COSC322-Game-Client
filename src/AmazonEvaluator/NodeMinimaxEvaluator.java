@@ -60,12 +60,15 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
             double score = node.nodeBoard.getBoardCalculator().calculateDeltaTerrainScore()[currentPlayerColor - 1];
 //            double score = 0;
             score += node.getMove().getFinal().getMobility();
+            if (node.getMove().getInitial().getDistance(otherPlayerColor, 1) == Integer.MAX_VALUE)
+                score -= 1000;
             ArrayList<AmazonSquare> queenList = node.nodeBoard.getQueenList(currentPlayerColor);
+
             double otherQueenScore = 0;
-            for (AmazonSquare otherQueen : queenList){
+            for (AmazonSquare otherQueen : queenList) {
                 otherQueenScore += otherQueen.getMobility();
             }
-            score -= 1.5 * otherQueenScore;
+            score -= 5 * otherQueenScore;
             return score;
         }
 
@@ -133,6 +136,7 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
                     for (AmazonSquare sFinal : moves) {
                         if (kill) break;
                         ArrayList<AmazonSquare> shots = node.nodeBoard.getBoardCalculator().generateListOfValidShots(queen, sFinal);
+//                        shots.sort(Comparator.comparing(c -> c.getMobility()).reversed());
                         for (AmazonSquare shot : shots) {
                             if (kill)
                                 break;

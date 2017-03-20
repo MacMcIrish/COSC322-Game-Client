@@ -36,6 +36,7 @@ public class AmazonBoardCalculator {
     public boolean checkForWinCondition() {
         board.getBoardCalculator().calculateBoard();
         //don't iterate the outer perimeter
+//        if (board.getQueenList())
         for (int x = minX + 1; x <= maxX - 1; x++)
 
             for (int y = minY + 1; y <= maxY - 1; y++)
@@ -162,7 +163,7 @@ public class AmazonBoardCalculator {
      * @return Boolean Whether the movement is valid
      */
     public boolean isMoveValid(AmazonMove move) throws InvalidMoveException {
-
+/*
         AmazonSquare sInit = board.getSquare(move.getInitial().getPosX(), move.getInitial().getPosY());
         AmazonSquare sFinal = board.getSquare(move.getFinal().getPosX(), move.getFinal().getPosY());
         AmazonSquare sArrow = board.getSquare(move.getArrow().getPosX(), move.getArrow().getPosY());
@@ -188,7 +189,7 @@ public class AmazonBoardCalculator {
 
         //Fail is the move is not valid
         if (!isShotValid(sInit, sFinal, sArrow))
-            throw new InvalidMoveException(move, "Arrow shot is not valid.");
+            throw new InvalidMoveException(move, "Arrow shot is not valid.");*/
 
         return true;
 
