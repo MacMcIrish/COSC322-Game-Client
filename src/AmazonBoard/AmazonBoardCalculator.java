@@ -447,22 +447,34 @@ public class AmazonBoardCalculator {
     public double[] calculateDeltaTerrainScore() {
         double whiteScore = 0;
         double blackScore = 0;
-        for (int x = minX; x <= maxX; x++) {
+
+        for (int x = minX; x <= maxX; x++)
             for (int y = minY; y <= maxY; y++) {
-                double localWhite = board.getSquare(x, y).getWhiteQueenDistance();
-                double localBlack = board.getSquare(x, y).getBlackQueenDistance();
+                AmazonSquare square = getSquare(x,y);
 
-//                double diff = localWhite - localBlack;
+//                int diff = getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) - getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
+                // Only work on open pieces
+                if(square.getPieceType() != 0){
+                    continue;
+                }
 
-                double cI = Math.pow(2, (-1) * localWhite) - Math.pow(2, (-1) * localBlack);
+                int whiteDistance = square.getWhiteQueenDistance();
+                int blackDistance = square.getBlackQueenDistance();
 
-                whiteScore += cI;
-                blackScore += cI;
-
+                if (whiteDistance == blackDistance){
+                    whiteScore += k;
+                    blackScore += k;
+                } else if (whiteDistance > blackDistance) {
+                    whiteScore += 1;
+//                    blackScore -= 1;
+                } else if (blackDistance > whiteDistance) {
+//                    whiteScore -= 1;
+                    blackScore += 1;
+                }
+                //ignore if difference is 0
             }
-        }
 
-        return new double[]{2 * whiteScore, 2 * blackScore};
+        return new double[]{whiteScore, blackScore};
     }
 
     /**
@@ -485,11 +497,11 @@ public class AmazonBoardCalculator {
                 if (Math.abs(diff) > AmazonBoard.maxX)
                     diff /= Math.abs(diff); //if one player can't reach the spot, give difference of 1 TODO: play with weightings of captured squares
 
-                if (diff < 0) whiteScore += -1 * diff;
+                if (diff < 0)
+                    whiteScore += -1 * diff;
+
                 else if (diff > 0) blackScore += diff;
                     //ignore if difference is 0
-
-                else continue;
             }
 
         return new int[]{whiteScore, blackScore};

@@ -218,6 +218,12 @@ public class AmazonAIPlayer extends AmazonPlayer {
         for (AmazonEvaluator e : evaluators) {
 
             e.stop();
+            while(e.getBestMove() == null)
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
             bestMoves.add(e.getBestMove());
             System.out.println("Best move from " + e.getClass().getSimpleName() + ": " + e.getBestMove().toString() + " piece type: " + e.getBestMove().getInitial().getPieceType());
 
@@ -269,7 +275,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         //TODO: have the list of acceptable evaluators generated dynamically
 //        AmazonEvaluator[] evaluators = {new RandomEvaluator(), new MaxMobilityEvaluator(), new BestMobilityEvaluator()};
-        AmazonEvaluator[] evaluators = {new AmazonTemplateEvaluator()};
+        AmazonEvaluator[] evaluators = {new NodeMinimaxEvaluator()};
         int evaluator = 0; //Default is the random evaluator
 
         if (args.length != 0) evaluator = Integer.parseInt(args[0]);

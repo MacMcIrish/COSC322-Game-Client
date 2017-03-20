@@ -30,6 +30,7 @@ public class AmazonBoard implements Cloneable {
     private ArrayList<AmazonSquare> boardSquares = new ArrayList<AmazonSquare>();
 
     AmazonBoardCalculator boardCalculator;
+    double[][] score;
 
     /**
      * Create the game board object, and set the initial positions of all the amazons
