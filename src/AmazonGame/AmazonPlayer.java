@@ -115,4 +115,6 @@ public abstract class AmazonPlayer extends GamePlayer {
      */
 
     public abstract String getAIType();
+
+    public abstract long getTurnStartTime();
 }
