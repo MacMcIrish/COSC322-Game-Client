@@ -34,11 +34,14 @@ public class AmazonBoardCalculator {
      * @return True if won, false if not
      */
     public boolean checkForWinCondition() {
-
+        board.getBoardCalculator().calculateBoard();
         //don't iterate the outer perimeter
         for (int x = minX + 1; x <= maxX - 1; x++)
+
             for (int y = minY + 1; y <= maxY - 1; y++)
-                if (!getSquare(x, y).isCaptured()) return false;
+                if (!getSquare(x, y).isCaptured()) {
+                    return false;
+                }
 
         return true;
     }
@@ -447,9 +450,10 @@ public class AmazonBoardCalculator {
     public double[] calculateDeltaTerrainScore() {
         double whiteScore = 0;
         double blackScore = 0;
+        double k = 1.5;
 
-        for (int x = minX; x <= maxX; x++)
-            for (int y = minY; y <= maxY; y++) {
+        for (int x = minX + 1; x <= maxX - 1; x++)
+            for (int y = minY + 1; y <= maxY - 1; y++) {
                 AmazonSquare square = getSquare(x,y);
 
 //                int diff = getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) - getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
@@ -464,10 +468,10 @@ public class AmazonBoardCalculator {
                 if (whiteDistance == blackDistance){
                     whiteScore += k;
                     blackScore += k;
-                } else if (whiteDistance > blackDistance) {
+                } else if (whiteDistance < blackDistance) {
                     whiteScore += 1;
 //                    blackScore -= 1;
-                } else if (blackDistance > whiteDistance) {
+                } else if (blackDistance < whiteDistance) {
 //                    whiteScore -= 1;
                     blackScore += 1;
                 }
