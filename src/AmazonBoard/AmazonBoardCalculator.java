@@ -167,8 +167,6 @@ public class AmazonBoardCalculator {
         //Fail if the sInit is not one of the queens
         if (sInit.getPieceType() != AmazonSquare.PIECETYPE_AMAZON_WHITE
                 && sInit.getPieceType() != AmazonSquare.PIECETYPE_AMAZON_BLACK) {
-            System.out.print("Board: \n\n" + board);
-
             System.out.println("Can't move " + sInit + " to " + sFinal);
             System.out.println("Exception queen list: " + board.getQueenList(0));
             System.out.println("Exception other queen list: " + board.getQueenList(1));

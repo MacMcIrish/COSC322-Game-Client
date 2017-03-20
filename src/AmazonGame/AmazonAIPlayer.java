@@ -204,7 +204,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         System.out.println("Time for move has elapsed, getting final move");
         ArrayList<AmazonMove> bestMoves = new ArrayList<AmazonMove>();
-        System.out.println("Board before evaluating: " + board);
+//        System.out.println("Board before evaluating: " + board);
 
         //Iterates through all of the evaluators, stops them, and get the best move from all of them
         for (AmazonEvaluator e : evaluators) {
@@ -220,7 +220,6 @@ public class AmazonAIPlayer extends AmazonPlayer {
         double random = new Random().nextDouble();
 
         AmazonMove bestMove = evaluators[0].getBestMove();
-        System.out.println("Board before weightMatrix: " + board);
 
         for (int i = 0; i < weightMatrix.length; i++) {
 
@@ -236,7 +235,6 @@ public class AmazonAIPlayer extends AmazonPlayer {
         turnEndTime = System.currentTimeMillis();
 
         try {
-            System.out.println("Board before move: " + board);
             board.executeMove(bestMove);
         } catch (InvalidMoveException e) {
             e.printStackTrace();
