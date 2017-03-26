@@ -370,6 +370,29 @@ public class AmazonBoardCalculator {
         return n;
     }
 
+    /**
+     * Calculates the total mobility of the adjacent squares
+     *
+     * @param square The square being evaluated
+     * @return The calculated surrounding mobility value
+     */
+    public int calculateTotalMobility(AmazonSquare square) {
+        int score = 0;
+        int otherPlayerColour = 3 - square.getPieceType();
+        ArrayList<AmazonSquare> moveList = generateListOfValidMoves(square);
+        for (AmazonSquare move : moveList) {
+            if (move.getDistance(otherPlayerColour, 1) < Integer.MAX_VALUE) {
+                int distance = Math.max(
+                        Math.abs(move.getPosX() - square.getPosX()),
+                        Math.abs(move.getPosY() - square.getPosY()));
+                score += move.getSquareStrength() / Math.pow(2, distance);
+            }
+        }
+
+        return score;
+    }
+
+
     public static final int MOBILITY_SCORE = 1;
     public static final int TERRAIN_SCORE = 2;
     public static final int RELATIVE_TERRAIN_SCORE = 3;
@@ -455,18 +478,18 @@ public class AmazonBoardCalculator {
 
         for (int x = minX + 1; x <= maxX - 1; x++)
             for (int y = minY + 1; y <= maxY - 1; y++) {
-                AmazonSquare square = getSquare(x,y);
+                AmazonSquare square = getSquare(x, y);
 
 //                int diff = getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) - getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
                 // Only work on open pieces
-                if(square.getPieceType() != 0){
+                if (square.getPieceType() != 0) {
                     continue;
                 }
 
                 int whiteDistance = square.getWhiteQueenDistance();
                 int blackDistance = square.getBlackQueenDistance();
 
-                if (whiteDistance == blackDistance){
+                if (whiteDistance == blackDistance) {
                     whiteScore += k;
                     blackScore += k;
                 } else if (whiteDistance < blackDistance) {
@@ -506,7 +529,7 @@ public class AmazonBoardCalculator {
                     whiteScore += -1 * diff;
 
                 else if (diff > 0) blackScore += diff;
-                    //ignore if difference is 0
+                //ignore if difference is 0
             }
 
         return new int[]{whiteScore, blackScore};
