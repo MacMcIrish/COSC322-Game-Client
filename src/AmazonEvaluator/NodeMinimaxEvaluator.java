@@ -55,21 +55,21 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
 
 
             // Minimize other queen mobility
-            double otherQueenScore = 0;
+//            double otherQueenScore = 0;
             for (AmazonSquare otherQueen : queenList) {
                 // Check if other queen lost mobility
-                otherQueenScore += otherQueen.getMobility();
+                score += otherQueen.getMobility();
             }
 
             // Maximise current queen mobility
             // Null values here
-            double currentQueenScore = 0;
+//            double currentQueenScore = 0;
             for (AmazonSquare currentQueen : node.nodeBoard.getQueenList(currentPlayerColor)){
-                currentQueenScore += currentQueen.getMobility();
+                score -= currentQueen.getMobility();
             }
 
-            double difference = otherQueenScore - currentQueenScore;
-            score += difference;
+//            double difference = otherQueenScore - currentQueenScore;
+//            score += difference;
             return score;
         }
 
