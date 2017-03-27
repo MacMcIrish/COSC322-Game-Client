@@ -106,7 +106,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
         } else if (messageType.equals(GameMessage.GAME_ACTION_MOVE)) {
 
             respondToMove(msgDetails);
-            if (checkForWinCondition()) return true;
+//            if (checkForWinCondition()) return true;
             takeTurn();
             // if (checkForWinCondition()) return true;
 
@@ -130,12 +130,13 @@ public class AmazonAIPlayer extends AmazonPlayer {
      * @return true for win, false for not
      */
     private boolean checkForWinCondition() {
-
+        /*
         if (board.getBoardCalculator().checkForWinCondition()) {
             System.out.println(board);
             endGame();
             return true;
         }
+        */
 
         return false;
     }

@@ -248,7 +248,8 @@ public class AmazonBoardUI extends JLayeredPane {
                 System.out.println("Mouse clicked: (" + xClick + ", " + yClick + ") hit square (" + xPos + ", " + yPos + ")");
 
                 AmazonSquare target = board.getSquare(xPos, yPos);
-
+                System.out.println("White distance: " + target.getDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE, 1) + "\tBlack distance: " + target.getDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK, 1));
+                System.out.println("Strength: " + target.getSquareStrength());
 /*
 
                 if (e.getButton() == MouseEvent.BUTTON1) {
