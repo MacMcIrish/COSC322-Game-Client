@@ -2,6 +2,7 @@ package AmazonEvaluator;
 
 import AmazonBoard.AmazonBoard;
 import AmazonBoard.AmazonSquare;
+import AmazonGame.AmazonConstants;
 import AmazonGame.AmazonNode;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
             for (AmazonNode node : origin.children) {
                 score = node.getScore();
                 if (score > bestScore) {
-//                    System.out.println("New best " + score + " replaces " + bestScore + " and " + node + " replaces " + bestNode);
+                    System.out.println("New best " + score + " replaces " + bestScore + " and " + node + " replaces " + bestNode);
                     bestScore = score;
                     bestNode = node;
                     AmazonMove bestMove = bestNode.getMove();
@@ -41,7 +42,7 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
                     bestCurrentMove = new AmazonMove(sInit, sFinal, arrow);
                 }
             }
-//            System.out.println("Bumping up depth");
+            System.out.println("Bumping up depth");
             depth++;
         }
         System.out.println("Took " + (System.currentTimeMillis() - l) + " to generate " + origin.getChildren().size() + " children");
@@ -51,12 +52,13 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
     }
 
     public double alphaBeta(AmazonNode node, int depth, double alpha, double beta, boolean maximizingPlayer, int currentPlayerColor) {
-        int otherPlayerColor = AmazonSquare.PIECETYPE_AMAZON_WHITE == getColor() ? 2 : 1;
+        int otherPlayerColor = AmazonSquare.PIECETYPE_AMAZON_WHITE == currentPlayerColor ? 2 : 1;
 
         if (depth == 0 || node.nodeBoard.getBoardCalculator().checkForWinCondition() || kill) {
-            double score = node.nodeBoard.getBoardCalculator().calculateScore(3)[currentPlayerColor - 1];
+            double score = node.nodeBoard.getBoardCalculator().calculateScore()[currentPlayerColor - 1];
 //            double score = 0;
 
+            /*
             ArrayList<AmazonSquare> queenList = node.nodeBoard.getQueenList(otherPlayerColor);
 
             // Minimize other queen mobility
@@ -80,7 +82,8 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
             }
 
 //            score -= 3 * otherQueenScore;
-//            score += 3 * currentQueenScore;
+//            score += 3 * currentQueenScore;*/
+
             return score;
         }
 

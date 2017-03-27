@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AmazonAIPlayer extends AmazonPlayer {
 
-    int gameMoveTime = 1; //Max length of move in seconds
+    int gameMoveTime = AmazonConstants.TURN_LENGTH; //Max length of move in seconds
 
     AmazonEvaluator[] evaluators;
     double[] weightMatrix;
@@ -181,6 +181,8 @@ public class AmazonAIPlayer extends AmazonPlayer {
      */
 
     private void takeTurn() {
+
+        board.incrementTurnNumber();
 
         Executors.newSingleThreadScheduledExecutor().schedule(
                 this::sendMove,
