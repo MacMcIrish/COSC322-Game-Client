@@ -25,13 +25,11 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
         AmazonNode bestNode = null;
         while (!kill && depth < 6) {
             alphaBeta(origin, depth, -Double.MAX_VALUE, Double.MAX_VALUE, true, getColor());
-//            System.out.println("Finished ab at " + depth);
             bestScore = -Double.MAX_VALUE;
-//            depth++;
+
             for (AmazonNode node : origin.children) {
                 score = node.getScore();
                 if (score > bestScore) {
-                    System.out.println("New best " + score + " replaces " + bestScore + " and " + node + " replaces " + bestNode);
                     bestScore = score;
                     bestNode = node;
                     AmazonMove bestMove = bestNode.getMove();
@@ -41,11 +39,8 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
                     bestCurrentMove = new AmazonMove(sInit, sFinal, arrow);
                 }
             }
-//            System.out.println("Bumping up depth");
             depth++;
         }
-        System.out.println("Took " + (System.currentTimeMillis() - l) + " to generate " + origin.getChildren().size() + " children");
-//        AmazonNode bestNode = Collections.max(origin.children, Comparator.comparing(AmazonNode::getScore));
 
         return bestCurrentMove;
     }
@@ -55,7 +50,6 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
 
         if (depth == 0 || kill) {
             double score = node.nodeBoard.getBoardCalculator().calculateScore(3)[otherPlayerColor - 1];
-//            double score = 0;
 
             ArrayList<AmazonSquare> queenList = node.nodeBoard.getQueenList(otherPlayerColor);
 
@@ -64,33 +58,18 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
             double otherQueenScore = 0;
             for (AmazonSquare otherQueen : queenList) {
                 // Check if other queen lost mobility
-//                otherQueenScore += node.nodeBoard.getBoardCalculator().calculateSquareMobility(otherQueen);
                 otherQueenScore += otherQueen.getMobility();
-//                otherQueenScore += node.nodeBoard.getBoardCalculator().calculateTotalMobility(otherQueen);
             }
 
             // Maximise current queen mobility
             // Null values here
             double currentQueenScore = 0;
-            /*
-            if (node.getMove() != null)
-                currentQueenScore = node.nodeBoard.getBoardCalculator().calculateTotalMobility(node.getMove().getFinal());
-            if (currentQueenScore == 0) {
-                score -= 10000;
-            } else {
-                score += currentQueenScore;
-            }*/
             for (AmazonSquare currentQueen : node.nodeBoard.getQueenList(currentPlayerColor)){
                 currentQueenScore += currentQueen.getMobility();
-//                currentQueenScore += node.nodeBoard.getBoardCalculator().calculateTotalMobility(currentQueen);
             }
 
             double difference = otherQueenScore - currentQueenScore;
-//            System.out.println("Current Queen Score:" + currentQueenScore + ", other queen score: " + otherQueenScore);
             score += difference;
-
-//            score -= 3 * otherQueenScore;
-//            score += 3 * currentQueenScore;
             return score;
         }
 
@@ -159,7 +138,6 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
                     for (AmazonSquare sFinal : moves) {
                         if (kill) break;
                         ArrayList<AmazonSquare> shots = node.nodeBoard.getBoardCalculator().generateListOfValidShots(queen, sFinal);
-//                        shots.sort(Comparator.comparing(c -> c.getMobility()).reversed());
                         for (AmazonSquare shot : shots) {
                             if (kill)
                                 break;
