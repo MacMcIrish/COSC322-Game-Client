@@ -5,6 +5,7 @@ import AmazonBoard.AmazonSquare;
 import AmazonEvaluator.AmazonEvaluator;
 import AmazonEvaluator.AmazonMove;
 import AmazonUI.AmazonUI;
+import ygraphs.ai.smart_fox.games.Amazon;
 import ygraphs.ai.smart_fox.games.AmazonsGameMessage;
 import ygraphs.ai.smart_fox.games.GamePlayer;
 
@@ -47,7 +48,7 @@ public abstract class AmazonPlayer extends GamePlayer {
         for (String room : gameClient.getRoomList())
             System.out.println(room);
 
-        String room = rooms.get(9);
+        String room = rooms.get(AmazonConstants.ROOM_NUMBER);
 
         gameClient.joinRoom(room);
         System.out.println(userName() + " joined room " + room);

@@ -2,6 +2,7 @@ package AmazonEvaluator;
 
 import AmazonBoard.AmazonBoard;
 import AmazonBoard.AmazonSquare;
+import AmazonGame.AmazonConstants;
 import AmazonGame.AmazonNode;
 
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
         int otherPlayerColor = AmazonSquare.PIECETYPE_AMAZON_WHITE == getColor() ? 2 : 1;
 
         if (depth == 0 || node.nodeBoard.getBoardCalculator().checkForWinCondition() || kill) {
-            double score = node.nodeBoard.getBoardCalculator().calculateScore(3)[currentPlayerColor - 1];
+            double score = node.nodeBoard.getBoardCalculator().calculateScore(AmazonConstants.SCORING_CALCULATOR)[currentPlayerColor - 1];
 //            double score = 0;
 
             ArrayList<AmazonSquare> queenList = node.nodeBoard.getQueenList(otherPlayerColor);
