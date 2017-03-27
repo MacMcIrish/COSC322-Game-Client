@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AmazonAIPlayer extends AmazonPlayer {
 
-    int gameMoveTime = 3; //Max length of move in seconds
+    public int gameMoveTime = 3; //Max length of move in seconds
 
     AmazonEvaluator[] evaluators;
     double[] weightMatrix;
@@ -206,6 +206,8 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
             e.stop();
             bestMoves.add(e.getBestMove());
+
+
             System.out.println("Best move from " + e.getClass().getSimpleName() + ": " + e.getBestMove().toString() + " piece type: " + e.getBestMove().getInitial().getPieceType());
 
         }

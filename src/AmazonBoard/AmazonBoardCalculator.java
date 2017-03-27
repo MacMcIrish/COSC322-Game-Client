@@ -2,6 +2,7 @@ package AmazonBoard;
 
 import AmazonEvaluator.AmazonMove;
 import AmazonEvaluator.InvalidMoveException;
+import AmazonGame.AmazonConstants;
 
 import java.util.*;
 
@@ -192,7 +193,6 @@ public class AmazonBoardCalculator {
             throw new InvalidMoveException(move, "Arrow shot is not valid.");*/
 
         return true;
-
     }
 
     /**
@@ -523,7 +523,7 @@ public class AmazonBoardCalculator {
                 int diff = getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) - getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
 
                 if (Math.abs(diff) > AmazonBoard.maxX)
-                    diff /= Math.abs(diff); //if one player can't reach the spot, give difference of 1 TODO: play with weightings of captured squares
+                    diff /= Math.abs(diff)* AmazonConstants.WEIGHT_OF_CAPTURED_SQUARE; //if one player can't reach the spot, give difference of 1 TODO: play with weightings of captured squares
 
                 if (diff < 0)
                     whiteScore += -1 * diff;

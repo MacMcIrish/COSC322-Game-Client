@@ -32,6 +32,8 @@ public class AmazonBoard implements Cloneable {
     AmazonBoardCalculator boardCalculator;
     double[][] score;
 
+    private LinkedList<AmazonMove> listOfMoves = new LinkedList<>();
+
     /**
      * Create the game board object, and set the initial positions of all the amazons
      */
@@ -167,6 +169,23 @@ public class AmazonBoard implements Cloneable {
         moveAmazon(move.getInitial(), move.getFinal());
         shootArrow(move.getFinal(), move.getArrow());
         boardCalculator.calculateBoard();
+
+        listOfMoves.addFirst(move);
+    }
+
+    /**
+     * Undoes the last move made in the game
+     */
+    public void undoMove() {
+
+        if (listOfMoves.size() <= 0) return;
+
+        AmazonMove lastMove = listOfMoves.pop();
+
+        getSquare(lastMove.getArrow().getPosX(), lastMove.getArrow().getPosY()).setPieceType(AmazonSquare.PIECETYPE_AVAILABLE);
+
+        moveAmazon(lastMove.getFinal(), lastMove.getInitial());
+
     }
 
     /**

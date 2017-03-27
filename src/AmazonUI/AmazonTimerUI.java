@@ -1,5 +1,6 @@
 package AmazonUI;
 
+import AmazonGame.AmazonAIPlayer;
 import AmazonGame.AmazonPlayer;
 
 import java.awt.EventQueue;
@@ -13,10 +14,10 @@ public class AmazonTimerUI {
     private Timer timer = new Timer();
     private JLabel timeLabel = new JLabel(" ", JLabel.CENTER);
 
-    private AmazonPlayer player;
+    private AmazonAIPlayer player;
 
     public AmazonTimerUI(AmazonPlayer player) {
-        this.player = player;
+        this.player = (AmazonAIPlayer) player;
 
         JFrame f = new JFrame("Seconds");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
