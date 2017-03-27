@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AmazonAIPlayer extends AmazonPlayer {
 
-    int gameMoveTime = 1; //Max length of move in seconds
+    int gameMoveTime = 3; //Max length of move in seconds
 
     AmazonEvaluator[] evaluators;
     double[] weightMatrix;
@@ -96,7 +96,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
         } else if (messageType.equals(GameMessage.GAME_ACTION_MOVE)) {
 
             respondToMove(msgDetails);
-//            if (checkForWinCondition()) return true;
+            if (checkForWinCondition()) return true;
             takeTurn();
             // if (checkForWinCondition()) return true;
 
@@ -120,13 +120,12 @@ public class AmazonAIPlayer extends AmazonPlayer {
      * @return true for win, false for not
      */
     private boolean checkForWinCondition() {
-        /*
+
         if (board.getBoardCalculator().checkForWinCondition()) {
-            System.out.println(board);
+
             endGame();
             return true;
         }
-        */
 
         return false;
     }
@@ -200,18 +199,12 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         System.out.println("Time for move has elapsed, getting final move");
         ArrayList<AmazonMove> bestMoves = new ArrayList<AmazonMove>();
-//        System.out.println("Board before evaluating: " + board);
+        System.out.println("Board before evaluating: " + board);
 
         //Iterates through all of the evaluators, stops them, and get the best move from all of them
         for (AmazonEvaluator e : evaluators) {
 
             e.stop();
-            while(e.getBestMove() == null)
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
             bestMoves.add(e.getBestMove());
             System.out.println("Best move from " + e.getClass().getSimpleName() + ": " + e.getBestMove().toString() + " piece type: " + e.getBestMove().getInitial().getPieceType());
 
@@ -222,6 +215,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
         double random = new Random().nextDouble();
 
         AmazonMove bestMove = evaluators[0].getBestMove();
+        System.out.println("Board before weightMatrix: " + board);
 
         for (int i = 0; i < weightMatrix.length; i++) {
 
@@ -234,6 +228,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
         }
 
         try {
+            System.out.println("Board before move: " + board);
             board.executeMove(bestMove);
         } catch (InvalidMoveException e) {
             e.printStackTrace();
@@ -260,7 +255,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         //TODO: have the list of acceptable evaluators generated dynamically
 //        AmazonEvaluator[] evaluators = {new RandomEvaluator(), new MaxMobilityEvaluator(), new BestMobilityEvaluator()};
-        AmazonEvaluator[] evaluators = {new NodeMinimaxEvaluator()};
+        AmazonEvaluator[] evaluators = {new AmazonTemplateEvaluator()};
         int evaluator = 0; //Default is the random evaluator
 
         if (args.length != 0) evaluator = Integer.parseInt(args[0]);
