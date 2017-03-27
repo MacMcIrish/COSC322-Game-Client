@@ -30,6 +30,8 @@ public class AmazonBoard implements Cloneable {
     private ArrayList<AmazonSquare> boardSquares = new ArrayList<AmazonSquare>();
 
     AmazonBoardCalculator boardCalculator;
+    double[][] score;
+
     /**
      * Create the game board object, and set the initial positions of all the amazons
      */
@@ -38,6 +40,24 @@ public class AmazonBoard implements Cloneable {
         resetBoard();
         boardCalculator = new AmazonBoardCalculator(this);
         boardCalculator.calculateBoard();
+    }
+
+    public AmazonBoard(AmazonBoard amazonBoard) {
+        whitePieces = new ArrayList<AmazonSquare>();
+        blackPieces = new ArrayList<AmazonSquare>();
+        for (int i = 0; i < amazonBoard.board.length; i++) {
+            for (int j = 0; j < amazonBoard.board[i].length; j++) {
+                AmazonSquare square = new AmazonSquare(amazonBoard.board[i][j]);
+                if (square.getPieceType() == AmazonSquare.PIECETYPE_AMAZON_WHITE)
+                    whitePieces.add(square);
+                else if (square.getPieceType() == AmazonSquare.PIECETYPE_AMAZON_BLACK)
+                    blackPieces.add(square);
+                this.board[i][j] = square;
+            }
+        }
+        this.boardSquares = new ArrayList<AmazonSquare>(amazonBoard.boardSquares);
+        boardCalculator = new AmazonBoardCalculator(this);
+//        boardCalculator.calculateBoard();
     }
 
     /**
@@ -155,7 +175,7 @@ public class AmazonBoard implements Cloneable {
      *
      * @param move The move to undo
      */
-    public void undoMove(AmazonMove move)  { //throws InvalidUndoException {
+    public void undoMove(AmazonMove move) { //throws InvalidUndoException {
 /*
         if (move.getInitial().getPieceType() != AmazonSquare.PIECETYPE_AVAILABLE)
             throw new InvalidUndoException("The initial square is not available.");
@@ -165,10 +185,22 @@ public class AmazonBoard implements Cloneable {
 
         if (move.getArrow().getPieceType() != AmazonSquare.PIECETYPE_ARROW)
             throw new InvalidUndoException("The arrow square is not an arrow.");*/
-
-        move.getInitial().setPieceType(move.getFinal().getPieceType());
-        move.getArrow().setPieceType(AmazonSquare.PIECETYPE_AVAILABLE);
-        move.getFinal().setPieceType(AmazonSquare.PIECETYPE_AVAILABLE);
+        if (move.getFinal().getPieceType() == AmazonSquare.PIECETYPE_AMAZON_WHITE) {
+            whitePieces.remove(move.getFinal());
+            whitePieces.add(move.getInitial());
+        } else {
+            blackPieces.remove(move.getFinal());
+            blackPieces.add(move.getInitial());
+        }
+        if (move.getInitial() == move.getArrow()) {
+            // After moving, the arrow was fired into the initial spot
+            move.getInitial().setPieceType(move.getFinal().getPieceType());
+            move.getFinal().setPieceType(AmazonSquare.PIECETYPE_AVAILABLE);
+        } else {
+            move.getInitial().setPieceType(move.getFinal().getPieceType());
+            move.getArrow().setPieceType(AmazonSquare.PIECETYPE_AVAILABLE);
+            move.getFinal().setPieceType(AmazonSquare.PIECETYPE_AVAILABLE);
+        }
         boardCalculator.calculateBoard();
     }
 
@@ -407,7 +439,9 @@ public class AmazonBoard implements Cloneable {
 
     }
 
-    public AmazonBoardCalculator getBoardCalculator() { return boardCalculator; }
+    public AmazonBoardCalculator getBoardCalculator() {
+        return boardCalculator;
+    }
 
 
 }

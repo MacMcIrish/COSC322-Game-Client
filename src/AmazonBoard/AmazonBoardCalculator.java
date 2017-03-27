@@ -2,7 +2,6 @@ package AmazonBoard;
 
 import AmazonEvaluator.AmazonMove;
 import AmazonEvaluator.InvalidMoveException;
-import ygraphs.ai.smart_fox.games.Amazon;
 
 import java.util.*;
 
@@ -35,11 +34,15 @@ public class AmazonBoardCalculator {
      * @return True if won, false if not
      */
     public boolean checkForWinCondition() {
-
+        board.getBoardCalculator().calculateBoard();
         //don't iterate the outer perimeter
+//        if (board.getQueenList())
         for (int x = minX + 1; x <= maxX - 1; x++)
+
             for (int y = minY + 1; y <= maxY - 1; y++)
-                if (!getSquare(x, y).isCaptured()) return false;
+                if (!getSquare(x, y).isCaptured()) {
+                    return false;
+                }
 
         return true;
     }
@@ -160,16 +163,19 @@ public class AmazonBoardCalculator {
      * @return Boolean Whether the movement is valid
      */
     public boolean isMoveValid(AmazonMove move) throws InvalidMoveException {
-
-        AmazonSquare sInit = move.getInitial();
-        AmazonSquare sFinal = move.getFinal();
-        AmazonSquare sArrow = move.getArrow();
+/*
+        AmazonSquare sInit = board.getSquare(move.getInitial().getPosX(), move.getInitial().getPosY());
+        AmazonSquare sFinal = board.getSquare(move.getFinal().getPosX(), move.getFinal().getPosY());
+        AmazonSquare sArrow = board.getSquare(move.getArrow().getPosX(), move.getArrow().getPosY());
 
         //Fail if the sInit is not one of the queens
         if (sInit.getPieceType() != AmazonSquare.PIECETYPE_AMAZON_WHITE
-                && sInit.getPieceType() != AmazonSquare.PIECETYPE_AMAZON_BLACK)
-            throw new InvalidMoveException(move, "Initial piece is not an amazon.");
-
+                && sInit.getPieceType() != AmazonSquare.PIECETYPE_AMAZON_BLACK) {
+            System.out.println("Can't move " + sInit + " to " + sFinal);
+            System.out.println("Exception queen list: " + board.getQueenList(0));
+            System.out.println("Exception other queen list: " + board.getQueenList(1));
+            throw new InvalidMoveException(move, "Initial piece is not an amazon, piece type " + sInit.getPieceType());
+        }
         if (sFinal.getPieceType() != AmazonSquare.PIECETYPE_AVAILABLE)
             throw new InvalidMoveException(move, "Final position is not available.");
 
@@ -183,7 +189,7 @@ public class AmazonBoardCalculator {
 
         //Fail is the move is not valid
         if (!isShotValid(sInit, sFinal, sArrow))
-            throw new InvalidMoveException(move, "Arrow shot is not valid.");
+            throw new InvalidMoveException(move, "Arrow shot is not valid.");*/
 
         return true;
 
@@ -364,9 +370,33 @@ public class AmazonBoardCalculator {
         return n;
     }
 
+    /**
+     * Calculates the total mobility of the adjacent squares
+     *
+     * @param square The square being evaluated
+     * @return The calculated surrounding mobility value
+     */
+    public int calculateTotalMobility(AmazonSquare square) {
+        int score = 0;
+        int otherPlayerColour = 3 - square.getPieceType();
+        ArrayList<AmazonSquare> moveList = generateListOfValidMoves(square);
+        for (AmazonSquare move : moveList) {
+            if (move.getDistance(otherPlayerColour, 1) < Integer.MAX_VALUE) {
+                int distance = Math.max(
+                        Math.abs(move.getPosX() - square.getPosX()),
+                        Math.abs(move.getPosY() - square.getPosY()));
+                score += move.getSquareStrength() / Math.pow(2, distance);
+            }
+        }
+
+        return score;
+    }
+
+
     public static final int MOBILITY_SCORE = 1;
     public static final int TERRAIN_SCORE = 2;
     public static final int RELATIVE_TERRAIN_SCORE = 3;
+    static final int DELTA_MOBILITY_SCORE = 4;
 
 
     /**
@@ -382,6 +412,8 @@ public class AmazonBoardCalculator {
                 return calculateTerrainScore();
             case RELATIVE_TERRAIN_SCORE:
                 return calculateRelativeTerrainScore();
+//            case DELTA_MOBILITY_SCORE:
+//                return calculateDeltaTerrainScore();
             case MOBILITY_SCORE:
             default:
                 return calculateMovementScore();
@@ -433,6 +465,47 @@ public class AmazonBoardCalculator {
     }
 
     /**
+     * Minimal Distance Delta Calculator
+     * Calculates the difference in moves for each colour for each square and sums them
+     *
+     * @return Integer value for the score of the current table
+     */
+
+    public double[] calculateDeltaTerrainScore() {
+        double whiteScore = 0;
+        double blackScore = 0;
+        double k = 1.5;
+
+        for (int x = minX + 1; x <= maxX - 1; x++)
+            for (int y = minY + 1; y <= maxY - 1; y++) {
+                AmazonSquare square = getSquare(x, y);
+
+//                int diff = getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) - getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
+                // Only work on open pieces
+                if (square.getPieceType() != 0) {
+                    continue;
+                }
+
+                int whiteDistance = square.getWhiteQueenDistance();
+                int blackDistance = square.getBlackQueenDistance();
+
+                if (whiteDistance == blackDistance) {
+                    whiteScore += k;
+                    blackScore += k;
+                } else if (whiteDistance < blackDistance) {
+                    whiteScore += 1;
+//                    blackScore -= 1;
+                } else if (blackDistance < whiteDistance) {
+//                    whiteScore -= 1;
+                    blackScore += 1;
+                }
+                //ignore if difference is 0
+            }
+
+        return new double[]{whiteScore, blackScore};
+    }
+
+    /**
      * Calculates the overall score of the board
      * Should be called after calling getDistances methods, otherwise score will be zero
      * Score = sum of differences of distances in all squares where player distance < opponent distance
@@ -452,11 +525,11 @@ public class AmazonBoardCalculator {
                 if (Math.abs(diff) > AmazonBoard.maxX)
                     diff /= Math.abs(diff); //if one player can't reach the spot, give difference of 1 TODO: play with weightings of captured squares
 
-                if (diff < 0) whiteScore += -1 * diff;
-                else if (diff > 0) blackScore += diff;
-                    //ignore if difference is 0
+                if (diff < 0)
+                    whiteScore += -1 * diff;
 
-                else continue;
+                else if (diff > 0) blackScore += diff;
+                //ignore if difference is 0
             }
 
         return new int[]{whiteScore, blackScore};
