@@ -23,7 +23,7 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
         long l = System.currentTimeMillis();
 //        origin.generateChildren(getColor());
         AmazonNode bestNode = null;
-        while (!kill || depth < 6) {
+        while (!kill && depth < 6) {
             alphaBeta(origin, depth, -Double.MAX_VALUE, Double.MAX_VALUE, true, getColor());
 //            System.out.println("Finished ab at " + depth);
             bestScore = -Double.MAX_VALUE;
@@ -31,7 +31,7 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
             for (AmazonNode node : origin.children) {
                 score = node.getScore();
                 if (score > bestScore) {
-//                    System.out.println("New best " + score + " replaces " + bestScore + " and " + node + " replaces " + bestNode);
+                    System.out.println("New best " + score + " replaces " + bestScore + " and " + node + " replaces " + bestNode);
                     bestScore = score;
                     bestNode = node;
                     AmazonMove bestMove = bestNode.getMove();
@@ -51,33 +51,43 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
     }
 
     public double alphaBeta(AmazonNode node, int depth, double alpha, double beta, boolean maximizingPlayer, int currentPlayerColor) {
-        int otherPlayerColor = AmazonSquare.PIECETYPE_AMAZON_WHITE == getColor() ? 2 : 1;
+        int otherPlayerColor = AmazonSquare.PIECETYPE_AMAZON_WHITE == currentPlayerColor ? 2 : 1;
 
-        if (depth == 0 || node.nodeBoard.getBoardCalculator().checkForWinCondition() || kill) {
-            double score = node.nodeBoard.getBoardCalculator().calculateScore(3)[currentPlayerColor - 1];
+        if (depth == 0 || kill) {
+            double score = node.nodeBoard.getBoardCalculator().calculateScore(3)[otherPlayerColor - 1];
 //            double score = 0;
 
             ArrayList<AmazonSquare> queenList = node.nodeBoard.getQueenList(otherPlayerColor);
+
 
             // Minimize other queen mobility
             double otherQueenScore = 0;
             for (AmazonSquare otherQueen : queenList) {
                 // Check if other queen lost mobility
 //                otherQueenScore += node.nodeBoard.getBoardCalculator().calculateSquareMobility(otherQueen);
-//                otherQueenScore += otherQueen.getMobility();
-                otherQueenScore += node.nodeBoard.getBoardCalculator().calculateTotalMobility(otherQueen);
+                otherQueenScore += otherQueen.getMobility();
+//                otherQueenScore += node.nodeBoard.getBoardCalculator().calculateTotalMobility(otherQueen);
             }
 
             // Maximise current queen mobility
             // Null values here
             double currentQueenScore = 0;
+            /*
             if (node.getMove() != null)
                 currentQueenScore = node.nodeBoard.getBoardCalculator().calculateTotalMobility(node.getMove().getFinal());
             if (currentQueenScore == 0) {
                 score -= 10000;
             } else {
                 score += currentQueenScore;
+            }*/
+            for (AmazonSquare currentQueen : node.nodeBoard.getQueenList(currentPlayerColor)){
+                currentQueenScore += currentQueen.getMobility();
+//                currentQueenScore += node.nodeBoard.getBoardCalculator().calculateTotalMobility(currentQueen);
             }
+
+            double difference = otherQueenScore - currentQueenScore;
+//            System.out.println("Current Queen Score:" + currentQueenScore + ", other queen score: " + otherQueenScore);
+            score += difference;
 
 //            score -= 3 * otherQueenScore;
 //            score += 3 * currentQueenScore;
@@ -134,6 +144,7 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
                         break;
                 }
             }
+            node.setScore(v);
             return v;
         } else {
             v = Double.MAX_VALUE;
@@ -183,6 +194,7 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
                         break;
                 }
             }
+            node.setScore(v);
             return v;
         }
     }
