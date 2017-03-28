@@ -7,7 +7,7 @@ import static AmazonBoard.AmazonBoardCalculator.*;
  */
 public class AmazonConstants {
 
-    public static final int TURN_LENGTH = 1; //in seconds
+    public static final int TURN_LENGTH = 2; //in seconds
     public static final int ROOM_NUMBER = 7;
     public static final int WEIGHT_OF_CAPTURED_SQUARE = 10;
 

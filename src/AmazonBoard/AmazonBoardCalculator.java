@@ -464,8 +464,10 @@ public class AmazonBoardCalculator {
         for (int x = minX; x <= maxX; x++)
             for (int y = minY; y <= maxY; y++) {
 
-                if (getSquare(x,y).getBlackKingDistance() > maxX*maxY && getSquare(x,y).getWhiteKingDistance() < maxX*maxY) whiteScore++;
-                if (getSquare(x,y).getWhiteKingDistance() > maxX*maxY && getSquare(x,y).getBlackKingDistance() < maxX*maxY) blackScore++;
+                if (getSquare(x, y).getBlackKingDistance() > maxX * maxY && getSquare(x, y).getWhiteKingDistance() < maxX * maxY)
+                    whiteScore++;
+                if (getSquare(x, y).getWhiteKingDistance() > maxX * maxY && getSquare(x, y).getBlackKingDistance() < maxX * maxY)
+                    blackScore++;
             }
 
         return new int[]{whiteScore, blackScore};
@@ -485,7 +487,7 @@ public class AmazonBoardCalculator {
         for (AmazonSquare q : board.getQueenList(AmazonSquare.PIECETYPE_AMAZON_BLACK))
             blackScore += q.getMobility();
 
-        return new int[]{whiteScore,blackScore};
+        return new int[]{whiteScore, blackScore};
 
     }
 
@@ -665,7 +667,7 @@ public class AmazonBoardCalculator {
                 int diff = getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) - getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
 
                 if (Math.abs(diff) > AmazonBoard.maxX)
-                    diff /= Math.abs(diff) * AmazonConstants.WEIGHT_OF_CAPTURED_SQUARE; //if one player can't reach the spot, give difference of 1 TODO: play with weightings of captured squares
+                    diff = (diff / Math.abs(diff)) * AmazonConstants.WEIGHT_OF_CAPTURED_SQUARE; //if one player can't reach the spot, give difference of 1 TODO: play with weightings of captured squares
 
                 if (diff < 0)
                     whiteScore += -1 * diff;

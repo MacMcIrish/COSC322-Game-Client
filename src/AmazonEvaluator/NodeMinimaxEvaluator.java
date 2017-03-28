@@ -26,10 +26,11 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
         while (!kill && depth < 6) {
             alphaBeta(origin, depth, -Double.MAX_VALUE, Double.MAX_VALUE, true, getColor());
             bestScore = -Double.MAX_VALUE;
-
+            System.out.println("Picking from " + origin.children.size());
             for (AmazonNode node : origin.children) {
                 score = node.getScore();
                 if (score > bestScore) {
+                    System.out.println("New score: " + score + " replaces old score: " + bestScore + " with " + node.getMove() + " replacing " + bestCurrentMove);
                     bestScore = score;
                     bestNode = node;
                     AmazonMove bestMove = bestNode.getMove();
@@ -49,27 +50,31 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
         int otherPlayerColor = AmazonSquare.PIECETYPE_AMAZON_WHITE == currentPlayerColor ? 2 : 1;
 
         if (depth == 0 || kill) {
-            double score = node.nodeBoard.getBoardCalculator().calculateScore(3)[otherPlayerColor - 1];
+            double score = 0;
 
+            score = 3 * node.nodeBoard.getBoardCalculator().calculateScore(3)[otherPlayerColor - 1];
             ArrayList<AmazonSquare> queenList = node.nodeBoard.getQueenList(otherPlayerColor);
 
-
             // Minimize other queen mobility
-//            double otherQueenScore = 0;
             for (AmazonSquare otherQueen : queenList) {
-                // Check if other queen lost mobility
-                score += otherQueen.getMobility();
+//                 Check if other queen lost mobility
+//                score += 2 * otherQueen.getMobility();
+//                score += node.nodeBoard.getBoardCalculator().calculateTotalMobility(otherQueen);
             }
 
             // Maximise current queen mobility
             // Null values here
-//            double currentQueenScore = 0;
-            for (AmazonSquare currentQueen : node.nodeBoard.getQueenList(currentPlayerColor)){
-                score -= currentQueen.getMobility();
+            for (AmazonSquare currentQueen : node.nodeBoard.getQueenList(currentPlayerColor)) {
+//                score -= 2 * currentQueen.getMobility();
+//                score -= node.nodeBoard.getBoardCalculator().calculateTotalMobility(currentQueen);
             }
 
 //            double difference = otherQueenScore - currentQueenScore;
 //            score += difference;
+            if (maximizingPlayer)
+                score = -score;
+
+
             return score;
         }
 
@@ -103,6 +108,7 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
                             } catch (InvalidMoveException ignored) {
 //                                e.printStackTrace();
                             }
+                            childBoard.getBoardCalculator().calculateBoard();
                             childNode.setNodeBoard(childBoard);
                             childNode.setScore(alphaBeta(childNode, depth - 1, alpha, beta, false, otherPlayerColor));
                             node.addChild(childNode);
@@ -114,7 +120,7 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
                     }
                 }
             } else {
-                node.children.sort(Comparator.comparing(AmazonNode::getScore));
+                node.children.sort(Comparator.comparing(AmazonNode::getScore).reversed());
                 for (AmazonNode childNode : node.children) {
                     node.setScore(alphaBeta(childNode, depth - 1, alpha, beta, false, otherPlayerColor));
                     v = Math.max(v, node.getScore());
@@ -152,6 +158,7 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
                             } catch (InvalidMoveException ignored) {
 //                                e.printStackTrace();
                             }
+                            childBoard.getBoardCalculator().calculateBoard();
                             childNode.setNodeBoard(childBoard);
                             childNode.setScore(alphaBeta(childNode, depth - 1, alpha, beta, true, otherPlayerColor));
                             node.addChild(childNode);
