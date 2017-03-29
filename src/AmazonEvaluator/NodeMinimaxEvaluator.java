@@ -23,7 +23,7 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
         long l = System.currentTimeMillis();
 //        origin.generateChildren(getColor());
         AmazonNode bestNode = null;
-        while (!kill && depth < 6) {
+        while (!kill && depth < 15) {
             alphaBeta(origin, depth, -Double.MAX_VALUE, Double.MAX_VALUE, true, getColor());
             bestScore = -Double.MAX_VALUE;
             System.out.println("Picking from " + origin.children.size());
@@ -40,6 +40,8 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
                     bestCurrentMove = new AmazonMove(sInit, sFinal, arrow);
                 }
             }
+
+            System.out.println("Depth increased to " + depth);
             depth++;
         }
 

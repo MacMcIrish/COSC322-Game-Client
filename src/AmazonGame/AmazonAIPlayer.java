@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AmazonAIPlayer extends AmazonPlayer {
 
-    int gameMoveTime = AmazonConstants.TURN_LENGTH; //Max length of move in seconds
+    double gameMoveTime = AmazonConstants.MIN_TURN_LENGTH; //Max length of move in seconds
 
     AmazonEvaluator[] evaluators;
     double[] weightMatrix;
@@ -182,11 +182,16 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
     private void takeTurn() {
 
+        System.out.println("Got opponents move, looking for our move.");
+
         board.incrementTurnNumber();
+        gameMoveTime += AmazonConstants.INC_TURN_LENGTH;
+
+        System.out.println("Game move time: " + gameMoveTime);
 
         Executors.newSingleThreadScheduledExecutor().schedule(
                 this::sendMove,
-                gameMoveTime,
+                (long) Math.min(gameMoveTime, AmazonConstants.MAX_TURN_LENGTH),
                 TimeUnit.SECONDS);
 
         for (AmazonEvaluator e : evaluators) {
@@ -246,6 +251,8 @@ public class AmazonAIPlayer extends AmazonPlayer {
         moveHistory.add(bestMove);
         amazonUI.repaint();
         gameClient.sendMoveMessage(bestMove);
+
+        System.out.println("Waiting for opponent's move.");
     }
 
     /**
