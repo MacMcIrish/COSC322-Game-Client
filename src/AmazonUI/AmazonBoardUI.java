@@ -579,14 +579,14 @@ public class AmazonBoardUI extends JLayeredPane {
                 } else {
                     timeStr += "Black: ";
                 }
-                nSeconds = ((double) player.getGameMoveTime()) - ((double) (System.currentTimeMillis() - player.getTurnStartTime())) / 1000;
+                nSeconds = (30.0) - ((double) (System.currentTimeMillis() - player.getTurnStartTime())) / 1000;
             } else if ((player.getTurnStartTime() < 1) && (!(player.getTurnEndTime() < 1))) {
                 if (player.getPlayerColor() == 1) {
                     timeStr += "Black: ";
                 } else {
                     timeStr += "White: ";
                 }
-                nSeconds = ((double) player.getGameMoveTime()) - ((double) (System.currentTimeMillis() - player.getTurnEndTime())) / 1000;
+                nSeconds = (30.0) - ((double) (System.currentTimeMillis() - player.getTurnEndTime())) / 1000;
             } else {
                 if (player.getPlayerColor() == 1) {
                     timeStr += "White: ";
