@@ -6,10 +6,12 @@ import ygraphs.ai.smart_fox.games.BoardGameModel;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.*;
 import java.util.function.Function;
 import AmazonGame.*;
 
@@ -38,6 +40,7 @@ public class AmazonBoardUI extends JLayeredPane {
 
     HeatMapUI heatMapUI;
     GameBoardUI boardUI;
+    TimerUI timerUI;
 
     /**
      * Creates the game board on the left of the screen
@@ -54,14 +57,18 @@ public class AmazonBoardUI extends JLayeredPane {
 
         boardUI = new GameBoardUI(this);
         heatMapUI = new HeatMapUI(this);
+        timerUI = new TimerUI(this, player);
 
         boardUI.setBounds(0, 0, width + 1, height + 1);
         heatMapUI.setBounds(0, 0, width + 1, height + 1 + 50);
+        timerUI.setBounds(0, 0, width + 1 + 200, height + 1);
 
         add(boardUI);
         add(heatMapUI);
-        setLayer(heatMapUI, 0);
+        add(timerUI);
+        setLayer(heatMapUI, 1);
         setLayer(boardUI, 3);
+        setLayer(timerUI, 0);
 
         // heatMapUI.setFunction(AmazonSquare::getSquareStrength);
 
@@ -514,6 +521,83 @@ public class AmazonBoardUI extends JLayeredPane {
         private Color getHeatMapColor(float colorFraction ) {
 
             return Color.getHSBColor(colorFraction * 0.35f, 1f, 1f);
+
+        }
+
+    }
+
+    private class TimerUI extends JPanel {
+        private JLabel timeLabel = new JLabel(" ", JLabel.CENTER);
+        String playerTime;
+
+        JComponent parent;
+        private AmazonPlayer player;
+
+        public TimerUI(JComponent parent, AmazonPlayer player) {
+            this.parent = parent;
+            this.player = player;
+
+
+            setLayout(new BorderLayout());
+
+            JPanel timerPanel = new JPanel(new FlowLayout());
+            //JFrame f = new JFrame("Seconds");
+            timerPanel.add(timeLabel);
+            //f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            //f.add(timeLabel);
+            //f.pack();
+            //f.setLocationRelativeTo(null);
+            //f.setVisible(true);
+            //timer.schedule(new TimerUI.UpdateUITask(), 0, 100);
+            startTimer();
+
+
+
+            add(timerPanel, BorderLayout.LINE_END);
+        }
+
+        public void startTimer() {
+
+            playerTime = createTimeMessage();
+
+            timeLabel.setText(playerTime);
+            new javax.swing.Timer(100, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    playerTime = createTimeMessage();
+                    timeLabel.setText(playerTime);
+                }
+            }).start();
+        }
+
+        public String createTimeMessage() {
+            String timeStr = "";
+            double nSeconds;
+
+            if (!(player.getTurnStartTime() < 1)) {
+                if (player.getPlayerColor() == 1) {
+                    timeStr += "White: ";
+                } else {
+                    timeStr += "Black: ";
+                }
+                nSeconds = ((double) player.getGameMoveTime()) - ((double) (System.currentTimeMillis() - player.getTurnStartTime())) / 1000;
+            } else if ((player.getTurnStartTime() < 1) && (!(player.getTurnEndTime() < 1))) {
+                if (player.getPlayerColor() == 1) {
+                    timeStr += "Black: ";
+                } else {
+                    timeStr += "White: ";
+                }
+                nSeconds = ((double) player.getGameMoveTime()) - ((double) (System.currentTimeMillis() - player.getTurnEndTime())) / 1000;
+            } else {
+                if (player.getPlayerColor() == 1) {
+                    timeStr += "White: ";
+                } else {
+                    timeStr += "Black: ";
+                }
+                nSeconds = 0;
+            }
+
+            timeStr += Math.round(nSeconds * 100d) / 100d;
+            return timeStr;
 
         }
 
