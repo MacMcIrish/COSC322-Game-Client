@@ -119,6 +119,5 @@ public abstract class AmazonPlayer extends GamePlayer {
 
     public abstract long getTurnStartTime();
     public abstract long getTurnEndTime();
-    public abstract int getGameMoveTime();
     public abstract int getPlayerColor();
 }

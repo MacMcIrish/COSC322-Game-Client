@@ -41,7 +41,6 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         this.turnStartTime = 0;
         this.turnEndTime = 0;
-        this.gameMoveTime = 10;
 
         amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
 
@@ -66,7 +65,6 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         this.turnStartTime = 0;
         this.turnEndTime = 0;
-        this.gameMoveTime = 10;
 
         amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
 
@@ -315,11 +313,6 @@ public class AmazonAIPlayer extends AmazonPlayer {
     @Override
     public long getTurnStartTime() {
         return turnStartTime;
-    }
-
-    @Override
-    public int getGameMoveTime() {
-        return gameMoveTime;
     }
 
     @Override
