@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AmazonAIPlayer extends AmazonPlayer {
 
-    int gameMoveTime; //Max length of move in seconds
+    double gameMoveTime = AmazonConstants.MIN_TURN_LENGTH; //Max length of move in seconds
     long turnStartTime;
     long turnEndTime;
 
@@ -41,7 +41,6 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         this.turnStartTime = 0;
         this.turnEndTime = 0;
-        this.gameMoveTime = 10;
 
         amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
 
@@ -66,7 +65,6 @@ public class AmazonAIPlayer extends AmazonPlayer {
 
         this.turnStartTime = 0;
         this.turnEndTime = 0;
-        this.gameMoveTime = 10;
 
         amazonUI.setTitle(amazonUI.getTitle() + ", Type: " + getAIType());
 
@@ -193,11 +191,16 @@ public class AmazonAIPlayer extends AmazonPlayer {
     private void takeTurn() {
 
         this.turnStartTime = System.currentTimeMillis();
-        System.out.println(turnStartTime / 1000);
+        System.out.println("Got opponents move, looking for our move.");
+
+        board.incrementTurnNumber();
+        gameMoveTime += AmazonConstants.INC_TURN_LENGTH;
+
+        System.out.println("Game move time: " + gameMoveTime);
 
         Executors.newSingleThreadScheduledExecutor().schedule(
                 this::sendMove,
-                gameMoveTime,
+                (long) Math.min(gameMoveTime, AmazonConstants.MAX_TURN_LENGTH),
                 TimeUnit.SECONDS);
 
         for (AmazonEvaluator e : evaluators) {
@@ -261,6 +264,8 @@ public class AmazonAIPlayer extends AmazonPlayer {
         moveHistory.add(bestMove);
         amazonUI.repaint();
         gameClient.sendMoveMessage(bestMove);
+
+        System.out.println("Waiting for opponent's move.");
     }
 
     /**
@@ -308,11 +313,6 @@ public class AmazonAIPlayer extends AmazonPlayer {
     @Override
     public long getTurnStartTime() {
         return turnStartTime;
-    }
-
-    @Override
-    public int getGameMoveTime() {
-        return gameMoveTime;
     }
 
     @Override

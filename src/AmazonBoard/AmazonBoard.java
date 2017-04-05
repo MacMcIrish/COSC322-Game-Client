@@ -32,6 +32,10 @@ public class AmazonBoard implements Cloneable {
     AmazonBoardCalculator boardCalculator;
     double[][] score;
 
+    private LinkedList<AmazonMove> listOfMoves = new LinkedList<>();
+
+    private int turnNumber = 0;
+
     /**
      * Create the game board object, and set the initial positions of all the amazons
      */
@@ -167,6 +171,23 @@ public class AmazonBoard implements Cloneable {
         moveAmazon(move.getInitial(), move.getFinal());
         shootArrow(move.getFinal(), move.getArrow());
         boardCalculator.calculateBoard();
+
+        listOfMoves.addFirst(move);
+    }
+
+    /**
+     * Undoes the last move made in the game
+     */
+    public void undoMove() {
+
+        if (listOfMoves.size() <= 0) return;
+
+        AmazonMove lastMove = listOfMoves.pop();
+
+        getSquare(lastMove.getArrow().getPosX(), lastMove.getArrow().getPosY()).setPieceType(AmazonSquare.PIECETYPE_AVAILABLE);
+
+        moveAmazon(lastMove.getFinal(), lastMove.getInitial());
+
     }
 
     /**
@@ -201,6 +222,9 @@ public class AmazonBoard implements Cloneable {
             move.getArrow().setPieceType(AmazonSquare.PIECETYPE_AVAILABLE);
             move.getFinal().setPieceType(AmazonSquare.PIECETYPE_AVAILABLE);
         }
+
+        listOfMoves.pop();
+
         boardCalculator.calculateBoard();
     }
 
@@ -439,8 +463,20 @@ public class AmazonBoard implements Cloneable {
 
     }
 
+
+
+    public LinkedList<AmazonMove> getHistoryOfMoves() {return listOfMoves;}
+
     public AmazonBoardCalculator getBoardCalculator() {
         return boardCalculator;
+    }
+
+    public int incrementTurnNumber() {
+        return turnNumber++;
+    }
+
+    public int getTurnNumber() {
+        return turnNumber;
     }
 
 

@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
+
 import AmazonGame.*;
 
 import java.awt.event.*;
@@ -36,11 +37,13 @@ public class AmazonBoardUI extends JLayeredPane {
     int cellDim = width / 10;
     int offset = 0;//width / 20;
 
-    Image iconQueenWhite = null, iconQueenBlack = null, iconArrow = null, iconTransparent = null;
+    Image iconQueenWhite = null, iconQueenBlack = null, iconArrow = null, iconTransparent = null, backgroundAtlas;
+
 
     HeatMapUI heatMapUI;
     GameBoardUI boardUI;
     TimerUI timerUI;
+    BackgroundUI backgroundUI;
 
     /**
      * Creates the game board on the left of the screen
@@ -57,25 +60,29 @@ public class AmazonBoardUI extends JLayeredPane {
 
         boardUI = new GameBoardUI(this);
         heatMapUI = new HeatMapUI(this);
+        backgroundUI = new BackgroundUI(this);
         timerUI = new TimerUI(this, player);
 
         boardUI.setBounds(0, 0, width + 1, height + 1);
         heatMapUI.setBounds(0, 0, width + 1, height + 1 + 50);
+        backgroundUI.setBounds(0, 0, width + 1, height + 1 + 50);
         timerUI.setBounds(0, 0, width + 1 + 200, height + 1);
 
         add(boardUI);
         add(heatMapUI);
+        add(backgroundUI);
         add(timerUI);
-        setLayer(heatMapUI, 1);
+        setLayer(backgroundUI, 1);
+        setLayer(heatMapUI, 2);
         setLayer(boardUI, 3);
         setLayer(timerUI, 0);
 
         // heatMapUI.setFunction(AmazonSquare::getSquareStrength);
-
     }
 
     /**
      * Gets the board associated with the UI
+     *
      * @return The game board
      */
     private AmazonBoard getBoard() {
@@ -136,7 +143,6 @@ public class AmazonBoardUI extends JLayeredPane {
 
         JComponent parent;
 
-
         public GameBoardUI(JComponent parent) {
             // this.game = game;
             // gameModel = new BoardGameModel(this.rows + 1, this.cols + 1);
@@ -159,21 +165,21 @@ public class AmazonBoardUI extends JLayeredPane {
         private void loadImages() {
 
             try {
-                iconQueenWhite = ImageIO.read(this.getClass().getResourceAsStream("/AmazonUI/whiteQueen.png"));
-                iconQueenBlack = ImageIO.read(this.getClass().getResourceAsStream("/AmazonUI/blackQueen.png"));
+                iconQueenWhite = ImageIO.read(this.getClass().getResourceAsStream("/AmazonUI/whiteTank.png"));
+                iconQueenBlack = ImageIO.read(this.getClass().getResourceAsStream("/AmazonUI/blackTank.png"));
                 iconArrow = ImageIO.read(this.getClass().getResourceAsStream("/AmazonUI/arrow.png"));
                 iconTransparent = ImageIO.read(this.getClass().getResourceAsStream("/AmazonUI/transparent.png"));
+                backgroundAtlas = ImageIO.read(this.getClass().getResourceAsStream("/AmazonUI/atlasbg.jpg"));
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-
         protected void paintComponent(Graphics gg) {
             Graphics g = (Graphics2D) gg;
 
             //  paintHeatmap(g, AmazonSquare::getWhiteKingDistance);
-            paintGrid(g);
             paintIcons(g);
         }
 
@@ -202,8 +208,8 @@ public class AmazonBoardUI extends JLayeredPane {
         private Image getIcon(AmazonSquare square) {
 
             switch (square.getPieceType()) {
-                case AmazonSquare.PIECETYPE_ARROW:
-                    return iconArrow;
+                //     case AmazonSquare.PIECETYPE_ARROW:
+                //       return iconArrow;
                 case AmazonSquare.PIECETYPE_AMAZON_WHITE:
                     return iconQueenWhite;
                 case AmazonSquare.PIECETYPE_AMAZON_BLACK:
@@ -212,22 +218,6 @@ public class AmazonBoardUI extends JLayeredPane {
             return iconTransparent;
         }
 
-        /**
-         * Paints the grid on the board
-         *
-         * @param g The graphic for the board
-         */
-        private void paintGrid(Graphics g) {
-
-            int rows = 10; //TODO: have actual variables from gameBoard
-
-            g.setColor(Color.BLACK);
-
-            for (int i = 0; i < rows + 1; i++) {
-                g.drawLine(i * getCellDim() + getOffset(), getOffset(), i * getCellDim() + getOffset(), rows * getCellDim() + getOffset());
-                g.drawLine(getOffset(), i * getCellDim() + getOffset(), cols * getCellDim() + getOffset(), i * getCellDim() + getOffset());
-            }
-        }
 
         public class GameEventHandler extends MouseAdapter {
 
@@ -312,13 +302,131 @@ public class AmazonBoardUI extends JLayeredPane {
     }//end of GameEventHandler
 
 
+    private class BackgroundUI extends JPanel implements ActionListener {
+
+        JComponent parent;
+
+        public BackgroundUI(JComponent parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * Required for repaint
+         *
+         * @param gg The graphics
+         */
+        protected void paintComponent(Graphics gg) {
+            Graphics g = (Graphics2D) gg;
+            paintBackground(g);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            repaint();
+            parent.repaint();
+        }
+
+
+        /**
+         * Paints a heatmap of a particular variable on the board
+         * Will create a gradient between the min and max value of the variable, with red being low and green being high
+         * TODO: should color under queens show as colored for distance?
+         *
+         * @param g The graphic for the board
+         */
+        private void paintBackground(Graphics g) {
+
+            System.out.println("Painting background");
+
+            // int[][] moves = {{-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}};
+
+            int[][] moves = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+
+            //Exclude outer edge
+            for (int x = 1; x <= 10; x++)
+                for (int y = 1; y <= 10; y++) {
+
+                    int n = 1000;
+                    int val = n*10;
+
+                    for (int[] move : moves) {
+
+                        if (getBoard().getSquare(x + move[0], y + move[1]).getPieceType() == AmazonSquare.PIECETYPE_ARROW)
+                            val += n;
+                        n /= 10;
+
+                    }
+
+                    int[] coord = getAtlasCoords(val, getBoard().getSquare(x, y).getPieceType() == AmazonSquare.PIECETYPE_ARROW);
+
+                    int xraw = panel2pixelX(x);
+                    int yraw =  panel2pixelY(y);
+
+                    int xatlas = (coord[0]-1)*32;
+                    int yatlas = (6-coord[1])*32;
+
+                    g.drawImage(backgroundAtlas, xraw, yraw, xraw + getCellDim(), yraw+getCellDim(),
+                            xatlas,yatlas, xatlas+32,yatlas+32, this);
+                    // 0,0, 32,32, this);
+
+                    // g.drawImage(backgroundAtlas, xraw, yraw, getCellDim(), getCellDim(), this);
+
+                }
+        }
+
+        private int[] getAtlasCoords(int val, boolean arrow) {
+
+            if (!arrow) return new int[]{1,1};
+
+            switch (val) {
+                case 10000: return new int[]{2,1};
+                case 10001: return new int[]{6,5};
+                case 10010: return new int[]{4,6};
+                case 10011: return new int[]{3,3};
+                case 10100: return new int[]{6,3};
+                case 10101: return new int[]{6,4};
+                case 10110: return new int[]{3,1};
+                case 10111: return new int[]{3,2};
+                case 11000: return new int[]{6,6};
+                case 11001: return new int[]{5,3};
+                case 11010: return new int[]{5,6};
+                case 11011: return new int[]{4,3};
+                case 11100: return new int[]{5,1};
+                case 11101: return new int[]{5,2};
+                case 11110: return new int[]{4,1};
+                case 11111: return new int[]{4,2};
+
+               /* case 10000: return new int[]{4,2};
+                case 10001: return new int[]{4,1};
+                case 10010: return new int[]{5,2};
+                case 10011: return new int[]{5,1};
+                case 10100: return new int[]{4,3};
+                case 10101: return new int[]{5,6};
+                case 10110: return new int[]{5,3};
+                case 10111: return new int[]{6,6};
+                case 11000: return new int[]{3,2};
+                case 11001: return new int[]{3,1};
+                case 11010: return new int[]{6,4};
+                case 11011: return new int[]{6,3};
+                case 11100: return new int[]{3,3};
+                case 11101: return new int[]{4,6};
+                case 11110: return new int[]{6,5};
+                case 11111: return new int[]{6,2};*/
+            }
+
+            return new int[]{1,6};
+        }
+
+    }
+
+
     /**
      * This class shows the heat map under the game board, and shows the options to change the function
      * displaying the heat map
      */
     private class HeatMapUI extends JPanel implements ActionListener {
 
-        Function<AmazonSquare, Integer> mapFunction = AmazonSquare::getMobility;
+        Function<AmazonSquare, Integer> mapFunction = null;
         boolean invert = false;
 
         JRadioButton noneRB, strengthRB, mobilityRB, distanceWhiteQueenRB, distanceBlackQueenRB, distanceWhiteKingRB, distanceBlackKingRB;
@@ -388,7 +496,7 @@ public class AmazonBoardUI extends JLayeredPane {
             radioPanel.add(distanceWhiteKingRB);
             radioPanel.add(distanceBlackKingRB);
 
-            mobilityRB.setSelected(true);
+            noneRB.setSelected(true);
 
             add(radioPanel, BorderLayout.PAGE_END);
 
@@ -474,7 +582,7 @@ public class AmazonBoardUI extends JLayeredPane {
             int minValue = Integer.MAX_VALUE;
 
 
-           // System.out.println(board.toString());
+            // System.out.println(board.toString());
 
             //Find max value, so can normalize the array
             //Exclude outer edge
@@ -499,29 +607,50 @@ public class AmazonBoardUI extends JLayeredPane {
 
                     //Remove any of the MAX_VALUE
                     int value = mapFunction.apply(getBoard().getSquare(x, y));
-                    float colorFraction = ((float) (maxValue-minValue) - (value-minValue)) / (maxValue-minValue);
+                    float colorFraction = ((float) (maxValue - minValue) - (value - minValue)) / (maxValue - minValue);
 
                     if (value == Integer.MAX_VALUE || value == Integer.MIN_VALUE || value == 0) g.setColor(Color.gray);
                     else if (invert)
                         g.setColor(getHeatMapColor(colorFraction));
                     else
-                        g.setColor(getHeatMapColor(1-colorFraction));
+                        g.setColor(getHeatMapColor(1 - colorFraction));
 
                     g.drawRect(panel2pixelX(x), panel2pixelY(y), width / rows, width / rows);  //TODO: change fill size
                     g.fillRect(panel2pixelX(x), panel2pixelY(y), width / rows, width / rows);  //TODO: change fill size
 
                 }
+
+
+            paintGrid(g);
         }
 
         /**
          * Converts the heatmap square fraction to HSB values
+         *
          * @param colorFraction Range of [0,1] where 1 is max value and 0 is min value
          * @return Color based on the fraction
          */
-        private Color getHeatMapColor(float colorFraction ) {
+        private Color getHeatMapColor(float colorFraction) {
 
             return Color.getHSBColor(colorFraction * 0.35f, 1f, 1f);
 
+        }
+
+        /**
+         * Paints the grid on the board
+         *
+         * @param g The graphic for the board
+         */
+        private void paintGrid(Graphics g) {
+
+            int rows = 10; //TODO: have actual variables from gameBoard
+
+            g.setColor(Color.BLACK);
+
+            for (int i = 0; i < rows + 1; i++) {
+                g.drawLine(i * getCellDim() + getOffset(), getOffset(), i * getCellDim() + getOffset(), rows * getCellDim() + getOffset());
+                g.drawLine(getOffset(), i * getCellDim() + getOffset(), cols * getCellDim() + getOffset(), i * getCellDim() + getOffset());
+            }
         }
 
     }

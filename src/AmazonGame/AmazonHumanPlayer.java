@@ -43,10 +43,6 @@ public class AmazonHumanPlayer extends AmazonPlayer {
     public long getTurnEndTime() {
         return 100;
     }
-    @Override
-    public int getGameMoveTime() {
-        return 100;
-    }
 
     @Override
     public int getPlayerColor() { return 1; }

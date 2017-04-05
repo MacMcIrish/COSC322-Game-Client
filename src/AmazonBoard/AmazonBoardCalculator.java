@@ -2,6 +2,7 @@ package AmazonBoard;
 
 import AmazonEvaluator.AmazonMove;
 import AmazonEvaluator.InvalidMoveException;
+import AmazonGame.AmazonConstants;
 
 import java.util.*;
 
@@ -192,7 +193,6 @@ public class AmazonBoardCalculator {
             throw new InvalidMoveException(move, "Arrow shot is not valid.");*/
 
         return true;
-
     }
 
     /**
@@ -392,19 +392,29 @@ public class AmazonBoardCalculator {
         return score;
     }
 
-
     public static final int MOBILITY_SCORE = 1;
     public static final int TERRAIN_SCORE = 2;
     public static final int RELATIVE_TERRAIN_SCORE = 3;
+    public static final int QD_KD_MOB_SCORE = 4;
+    public static final int KD_SCORE = 5;
+    public static final int CAPTURED_SCORE = 6;
     static final int DELTA_MOBILITY_SCORE = 4;
-
 
     /**
      * Based on : https://project.dke.maastrichtuniversity.nl/games/files/msc/Hensgens_thesis.pdf
      *
-     * @param type
      * @return
      */
+    public int[] calculateScore() {
+
+        if (board.getTurnNumber() < AmazonConstants.LENGTH_OF_START_PHASE)
+            return calculateScore(AmazonConstants.START_PHASE_CALCULATOR);
+        else if (board.getTurnNumber() < AmazonConstants.LENGTH_OF_MID_PHASE)
+            return calculateScore(AmazonConstants.MID_PHASE_CALCULATOR);
+        return calculateScore(AmazonConstants.END_PHASE_CALCULATOR);
+
+    }
+
     public int[] calculateScore(int type) {
 
         switch (type) {
@@ -414,12 +424,17 @@ public class AmazonBoardCalculator {
                 return calculateRelativeTerrainScore();
 //            case DELTA_MOBILITY_SCORE:
 //                return calculateDeltaTerrainScore();
+            case QD_KD_MOB_SCORE:
+                return calculateQdKdMobScore();
+            case KD_SCORE:
+                return calculateKdScore();
             case MOBILITY_SCORE:
+                return calculateMobilityScore();
+            case CAPTURED_SCORE:
+                return calculateCapturedScore();
             default:
                 return calculateMovementScore();
         }
-
-
     }
 
 
@@ -436,6 +451,43 @@ public class AmazonBoardCalculator {
         int blackMoves = generateListOfValidMoves(AmazonSquare.PIECETYPE_AMAZON_BLACK, maxX).size();
 
         return new int[]{whiteMoves, blackMoves};
+
+    }
+
+
+    public int[] calculateCapturedScore() {
+
+
+        int whiteScore = 0;
+        int blackScore = 0;
+
+        for (int x = minX; x <= maxX; x++)
+            for (int y = minY; y <= maxY; y++) {
+
+                if (getSquare(x, y).getBlackKingDistance() > maxX * maxY && getSquare(x, y).getWhiteKingDistance() < maxX * maxY)
+                    whiteScore++;
+                if (getSquare(x, y).getWhiteKingDistance() > maxX * maxY && getSquare(x, y).getBlackKingDistance() < maxX * maxY)
+                    blackScore++;
+            }
+
+        return new int[]{whiteScore, blackScore};
+
+    }
+
+    public int[] calculateMobilityScore() {
+
+        int whiteScore = 0;
+        int blackScore = 0;
+
+        calculateBoard();
+
+        for (AmazonSquare q : board.getQueenList(AmazonSquare.PIECETYPE_AMAZON_WHITE))
+            whiteScore += q.getMobility();
+
+        for (AmazonSquare q : board.getQueenList(AmazonSquare.PIECETYPE_AMAZON_BLACK))
+            blackScore += q.getMobility();
+
+        return new int[]{whiteScore, blackScore};
 
     }
 
@@ -459,6 +511,98 @@ public class AmazonBoardCalculator {
                 else if (diff > 0) blackScore++;
                 else continue;
             }
+
+        return new int[]{whiteScore, blackScore};
+
+    }
+
+    public int[] calculateKingDistanceScore() {
+
+        int whiteScore = 0;
+        int blackScore = 0;
+
+        for (int x = minX; x <= maxX; x++)
+            for (int y = minY; y <= maxY; y++) {
+
+            }
+
+        return null;
+    }
+
+    public int[] calculateKdScore() {
+
+        int whiteScore = 0;
+        int blackScore = 0;
+
+        for (int x = minX; x <= maxX; x++)
+            for (int y = minY; y <= maxY; y++) {
+
+                whiteScore += getSquare(x, y).getWhiteKingDistance();
+                blackScore += getSquare(x, y).getBlackKingDistance();
+
+
+            }
+
+        whiteScore = 1 / whiteScore * 1000000;
+        blackScore = 1 / blackScore * 1000000;
+
+        return new int[]{whiteScore, blackScore};
+
+
+    }
+
+
+    /**
+     * Calculate the score based on the queens distance, kings distance and mobility
+     * Meant for mid game generation
+     *
+     * @return
+     */
+    public int[] calculateQdKdMobScore() {
+
+        int whiteScore = 0;
+        int blackScore = 0;
+
+        for (int x = minX; x <= maxX; x++)
+            for (int y = minY; y <= maxY; y++) {
+
+                //Get Queen distances
+                int queenDiff = getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) - getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
+
+                if (Math.abs(queenDiff) > AmazonBoard.maxX)
+                    queenDiff /= Math.abs(queenDiff) * AmazonConstants.WEIGHT_OF_CAPTURED_SQUARE; //if one player can't reach the spot, give difference of 1 TODO: play with weightings of captured squares
+
+                if (queenDiff < 0)
+                    whiteScore += -1 * queenDiff;
+
+                else if (queenDiff > 0) blackScore += queenDiff;
+                //ignore if difference is 0
+
+                //Get king distances
+                int kingDiff = getSquare(x, y).getKingDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) - getSquare(x, y).getKingDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
+
+                if (Math.abs(kingDiff) > AmazonBoard.maxX)
+                    kingDiff /= Math.abs(kingDiff) * AmazonConstants.WEIGHT_OF_CAPTURED_SQUARE; //if one player can't reach the spot, give difference of 1 TODO: play with weightings of captured squares
+
+                if (kingDiff < 0)
+                    whiteScore += -1 * kingDiff;
+
+                else if (kingDiff > 0) blackScore += kingDiff;
+                //ignore if difference is 0
+
+            }
+
+        int whiteMobility = 0;
+        int blackMobility = 0;
+
+        for (AmazonSquare s : board.getQueenList(AmazonSquare.PIECETYPE_AMAZON_WHITE))
+            whiteMobility += s.getMobility();
+
+        for (AmazonSquare s : board.getQueenList(AmazonSquare.PIECETYPE_AMAZON_BLACK))
+            blackMobility += s.getMobility();
+
+        whiteScore += (whiteMobility - blackMobility) / 4;
+        blackScore += (blackMobility - whiteMobility) / 4;
 
         return new int[]{whiteScore, blackScore};
 
@@ -523,7 +667,7 @@ public class AmazonBoardCalculator {
                 int diff = getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) - getSquare(x, y).getQueenDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
 
                 if (Math.abs(diff) > AmazonBoard.maxX)
-                    diff /= Math.abs(diff); //if one player can't reach the spot, give difference of 1 TODO: play with weightings of captured squares
+                    diff = (diff / Math.abs(diff)) * AmazonConstants.WEIGHT_OF_CAPTURED_SQUARE; //if one player can't reach the spot, give difference of 1 TODO: play with weightings of captured squares
 
                 if (diff < 0)
                     whiteScore += -1 * diff;
