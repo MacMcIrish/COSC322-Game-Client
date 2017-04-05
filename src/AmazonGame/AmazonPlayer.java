@@ -51,7 +51,7 @@ public abstract class AmazonPlayer extends GamePlayer {
         System.out.println(gameClient.getRoomList().size() + " rooms available");
         for (String room : gameClient.getRoomList()) System.out.println(room);
 
-        String room = rooms.get(1);
+        String room = rooms.get(AmazonConstants.ROOM_NUMBER);
 
         gameClient.joinRoom(room);
         System.out.println(userName() + " joined room " + room);
