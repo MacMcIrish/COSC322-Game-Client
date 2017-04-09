@@ -578,7 +578,7 @@ public class AmazonBoardCalculator {
                 else if (queenDiff > 0) blackScore += queenDiff;
                 //ignore if difference is 0
 
-                //Get king distances
+               /* //Get king distances
                 int kingDiff = getSquare(x, y).getKingDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) - getSquare(x, y).getKingDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
 
                 if (Math.abs(kingDiff) > AmazonBoard.maxX)
@@ -588,7 +588,7 @@ public class AmazonBoardCalculator {
                     whiteScore += -1 * kingDiff;
 
                 else if (kingDiff > 0) blackScore += kingDiff;
-                //ignore if difference is 0
+                //ignore if difference is 0*/
 
             }
 
@@ -673,8 +673,26 @@ public class AmazonBoardCalculator {
                     whiteScore += -1 * diff;
 
                 else if (diff > 0) blackScore += diff;
+/*
+
+                int kingdiff = getSquare(x, y).getKingDistance(AmazonSquare.PIECETYPE_AMAZON_WHITE) - getSquare(x, y).getKingDistance(AmazonSquare.PIECETYPE_AMAZON_BLACK);
+
+                if (Math.abs(kingdiff) > AmazonBoard.maxX)
+                    kingdiff = (kingdiff / Math.abs(kingdiff)) * AmazonConstants.WEIGHT_OF_CAPTURED_SQUARE; //if one player can't reach the spot, give difference of 1 TODO: play with weightings of captured squares
+
+                if (kingdiff < 0)
+                    whiteScore += -1 * kingdiff;
+
+                else if (kingdiff > 0) blackScore += kingdiff;
+*/
+
+
                 //ignore if difference is 0
             }
+
+        //System.out.println("WhiteScore = " + whiteScore + ", BlackScore = " + blackScore);
+
+
 
         return new int[]{whiteScore, blackScore};
     }

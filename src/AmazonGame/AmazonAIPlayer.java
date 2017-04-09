@@ -1,7 +1,6 @@
 package AmazonGame;
 
-import AmazonBoard.AmazonBoardCalculator;
-import AmazonBoard.AmazonSquare;
+import AmazonBoard.*;
 import AmazonEvaluator.*;
 import ygraphs.ai.smart_fox.GameMessage;
 
@@ -195,7 +194,7 @@ public class AmazonAIPlayer extends AmazonPlayer {
                 TimeUnit.SECONDS);
 
         for (AmazonEvaluator e : evaluators) {
-            e.loadBoard(board);
+            e.loadBoard(board);//new AmazonBoard(board));
             e.run();
         }
     }
@@ -229,6 +228,14 @@ public class AmazonAIPlayer extends AmazonPlayer {
         double random = new Random().nextDouble();
 
         AmazonMove bestMove = evaluators[0].getBestMove();
+
+        AmazonSquare sInit = board.getSquare(bestMove.getInitial().getPosX(), bestMove.getInitial().getPosY());
+
+        AmazonSquare sFinal = board.getSquare(bestMove.getFinal().getPosX(), bestMove.getFinal().getPosY());
+
+        AmazonSquare sArrow = board.getSquare(bestMove.getArrow().getPosX(), bestMove.getArrow().getPosY());
+
+        //bestMove = new AmazonMove(sInit,sFinal,sArrow);
 
         for (int i = 0; i < weightMatrix.length; i++) {
 

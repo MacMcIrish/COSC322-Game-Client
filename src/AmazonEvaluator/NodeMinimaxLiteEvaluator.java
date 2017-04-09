@@ -8,14 +8,17 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 /**
- * Created by jeff on 19/03/17.
+ * Created by d on 29/03/17.
  */
-public class NodeMinimaxEvaluator extends AmazonEvaluator {
+public class NodeMinimaxLiteEvaluator extends AmazonEvaluator {
+
+    int nodesChecked = 0;
+
     @Override
     public AmazonMove evaluateBoard() {
         bestCurrentMove = null;
         AmazonNode origin = new AmazonNode(null, null);
-        origin.setNodeBoard(new AmazonBoard(board));
+        //origin.setNodeBoard(new AmazonBoard(board));
 //        AmazonMove bestMove;
         double score, bestScore;
 
@@ -30,22 +33,19 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
             alphaBeta(origin, depth, -Double.MAX_VALUE, Double.MAX_VALUE, true, getColor());
             bestScore = -Double.MAX_VALUE;
             System.out.println("Picking from " + origin.children.size());
+            int i = 0;
             for (AmazonNode node : origin.children) {
+
                 score = node.getScore();
                 if (score > bestScore) {
                     System.out.println("New score: " + score + " replaces old score: " + bestScore + " with " + node.getMove() + " replacing " + bestCurrentMove);
                     bestScore = score;
                     bestNode = node;
-                    AmazonMove bestMove = bestNode.getMove();
-                    AmazonSquare sInit = board.getSquare(bestMove.getInitial().getPosX(), bestMove.getInitial().getPosY());
-                    AmazonSquare sFinal = board.getSquare(bestMove.getFinal().getPosX(), bestMove.getFinal().getPosY());
-                    AmazonSquare arrow = board.getSquare(bestMove.getArrow().getPosX(), bestMove.getArrow().getPosY());
-                    bestCurrentMove = new AmazonMove(sInit, sFinal, arrow);
+                    bestCurrentMove = bestNode.getMove();
                 }
             }
 
             System.out.println("Depth " + depth + " finished in " + ((System.currentTimeMillis() - time)) + " ms");
-
             depth++;
         }
 
@@ -53,33 +53,13 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
     }
 
     public double alphaBeta(AmazonNode node, int depth, double alpha, double beta, boolean maximizingPlayer, int currentPlayerColor) {
-        int otherPlayerColor = AmazonSquare.PIECETYPE_AMAZON_WHITE == currentPlayerColor ? 2 : 1;
+        int otherPlayerColor = (AmazonSquare.PIECETYPE_AMAZON_WHITE == currentPlayerColor ? 2 : 1);
 
         if (depth == 0 || kill) {
-            double score = 0;
+            double score = board.getBoardCalculator().calculateScore()[otherPlayerColor - 1];
 
-            score = node.nodeBoard.getBoardCalculator().calculateScore()[otherPlayerColor - 1];
-            ArrayList<AmazonSquare> queenList = node.nodeBoard.getQueenList(otherPlayerColor);
-
-            // Minimize other queen mobility
-            for (AmazonSquare otherQueen : queenList) {
-//                 Check if other queen lost mobility
-//                score += 2 * otherQueen.getMobility();
-//                score += node.nodeBoard.getBoardCalculator().calculateTotalMobility(otherQueen);
-            }
-
-            // Maximise current queen mobility
-            // Null values here
-            for (AmazonSquare currentQueen : node.nodeBoard.getQueenList(currentPlayerColor)) {
-//                score -= 2 * currentQueen.getMobility();
-//                score -= node.nodeBoard.getBoardCalculator().calculateTotalMobility(currentQueen);
-            }
-
-//            double difference = otherQueenScore - currentQueenScore;
-//            score += difference;
             if (maximizingPlayer)
                 score = -score;
-
 
             return score;
         }
@@ -89,40 +69,41 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
             v = -Double.MAX_VALUE;
             // Generate list of all possible outcomes
             if (node.children.size() == 0) {
-                ArrayList<AmazonSquare> queenList = node.nodeBoard.getQueenList(currentPlayerColor);
+                ArrayList<AmazonSquare> queenList = board.getQueenList(currentPlayerColor);
                 for (int i = 0; i < queenList.size(); i++) {
                     if (kill)
                         break;
                     AmazonSquare queen = queenList.get(i);
-                    ArrayList<AmazonSquare> moves = node.nodeBoard.getBoardCalculator().generateListOfValidMoves(queen);
+                    ArrayList<AmazonSquare> moves = board.getBoardCalculator().generateListOfValidMoves(queen);
                     for (AmazonSquare sFinal : moves) {
                         if (kill)
                             break;
-                        ArrayList<AmazonSquare> shots = node.nodeBoard.getBoardCalculator().generateListOfValidShots(queen, sFinal);
+                        ArrayList<AmazonSquare> shots = board.getBoardCalculator().generateListOfValidShots(queen, sFinal);
 //                    System.out.println("Moves: " + shots.size() + "\tTotal moves: " + node.children.size());
                         for (AmazonSquare shot : shots) {
                             if (kill)
                                 break;
-                            AmazonBoard childBoard = new AmazonBoard(node.nodeBoard);
-                            AmazonSquare childInit = childBoard.getSquare(queen.getPosX(), queen.getPosY());
-                            AmazonSquare childFin = childBoard.getSquare(sFinal.getPosX(), sFinal.getPosY());
-                            AmazonSquare childShot = childBoard.getSquare(shot.getPosX(), shot.getPosY());
-                            AmazonMove childMove = new AmazonMove(childInit, childFin, childShot);
-                            AmazonNode childNode = new AmazonNode(node, childMove);
+
+                            AmazonMove move = new AmazonMove(queen, sFinal, shot);
+
                             try {
-                                childBoard.executeMove(childMove);
+                            board.executeMove(move);
                             } catch (InvalidMoveException ignored) {
 //                                e.printStackTrace();
                             }
-                            childBoard.getBoardCalculator().calculateBoard();
-                            childNode.setNodeBoard(childBoard);
+
+                            AmazonNode childNode = new AmazonNode(node, move);
+
+                            board.getBoardCalculator().calculateBoard();
                             childNode.setScore(alphaBeta(childNode, depth - 1, alpha, beta, false, otherPlayerColor));
                             node.addChild(childNode);
                             v = Math.max(v, node.getScore());
                             alpha = Math.max(v, alpha);
+
+                            board.undoMove();
+
                             if (beta <= alpha)
                                 break;
-
                         }
                     }
                 }
@@ -142,37 +123,41 @@ public class NodeMinimaxEvaluator extends AmazonEvaluator {
             v = Double.MAX_VALUE;
             // Generate list of all possible outcomes
             if (node.children.size() == 0) {
-                ArrayList<AmazonSquare> queenList = node.nodeBoard.getQueenList(currentPlayerColor);
+                ArrayList<AmazonSquare> queenList = board.getQueenList(currentPlayerColor);
                 for (int i = 0; i < queenList.size(); i++) {
                     if (kill)
                         break;
                     AmazonSquare queen = queenList.get(i);
-                    ArrayList<AmazonSquare> moves = node.nodeBoard.getBoardCalculator().generateListOfValidMoves(queen);
+                    ArrayList<AmazonSquare> moves = board.getBoardCalculator().generateListOfValidMoves(queen);
                     for (AmazonSquare sFinal : moves) {
                         if (kill) break;
-                        ArrayList<AmazonSquare> shots = node.nodeBoard.getBoardCalculator().generateListOfValidShots(queen, sFinal);
+                        ArrayList<AmazonSquare> shots = board.getBoardCalculator().generateListOfValidShots(queen, sFinal);
                         for (AmazonSquare shot : shots) {
                             if (kill)
                                 break;
-                            AmazonBoard childBoard = new AmazonBoard(node.nodeBoard);
-                            AmazonSquare childInit = childBoard.getSquare(queen.getPosX(), queen.getPosY());
-                            AmazonSquare childFin = childBoard.getSquare(sFinal.getPosX(), sFinal.getPosY());
-                            AmazonSquare childShot = childBoard.getSquare(shot.getPosX(), shot.getPosY());
-                            AmazonMove childMove = new AmazonMove(childInit, childFin, childShot);
-                            AmazonNode childNode = new AmazonNode(node, childMove);
+
+
+                            AmazonMove move = new AmazonMove(queen, sFinal, shot);
+
                             try {
-                                childBoard.executeMove(childMove);
+                                board.executeMove(move);
                             } catch (InvalidMoveException ignored) {
 //                                e.printStackTrace();
                             }
-                            childBoard.getBoardCalculator().calculateBoard();
-                            childNode.setNodeBoard(childBoard);
-                            childNode.setScore(alphaBeta(childNode, depth - 1, alpha, beta, true, otherPlayerColor));
+
+                            AmazonNode childNode = new AmazonNode(node, move);
+
+                            board.getBoardCalculator().calculateBoard();
+                            childNode.setScore(alphaBeta(childNode, depth - 1, alpha, beta, false, otherPlayerColor));
                             node.addChild(childNode);
                             v = Math.min(v, node.getScore());
                             beta = Math.min(v, beta);
+
+                            board.undoMove();
+
                             if (beta <= alpha)
                                 break;
+
                         }
                     }
                 }

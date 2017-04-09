@@ -7,11 +7,11 @@ import static AmazonBoard.AmazonBoardCalculator.*;
  */
 public class AmazonConstants {
 
-    public static final double MIN_TURN_LENGTH = 2; //in seconds
+    public static final double MIN_TURN_LENGTH = 5; //in seconds
     public static final double MAX_TURN_LENGTH = 25; //in seconds
-    public static final double INC_TURN_LENGTH = 0.5; //in seconds
+    public static final double INC_TURN_LENGTH = 0.7; //in seconds
     public static final int ROOM_NUMBER = 2;
-    public static final int WEIGHT_OF_CAPTURED_SQUARE = 10;
+    public static final int WEIGHT_OF_CAPTURED_SQUARE = 3;
 
     /*
     MOBILITY_SCORE = 1;
@@ -21,12 +21,11 @@ public class AmazonConstants {
     KD_SCORE = 5
     CAPTURED_SCORE = 6
     */
-
-    public static final int START_PHASE_CALCULATOR = MOBILITY_SCORE;
-    public static final int LENGTH_OF_START_PHASE = 5;
-    public static final int MID_PHASE_CALCULATOR = QD_KD_MOB_SCORE;
-    public static final int LENGTH_OF_MID_PHASE = 30;
-    public static final int END_PHASE_CALCULATOR = CAPTURED_SCORE;
+    public static final int START_PHASE_CALCULATOR = RELATIVE_TERRAIN_SCORE;
+    public static final int LENGTH_OF_START_PHASE = 100;
+    public static final int MID_PHASE_CALCULATOR = MOBILITY_SCORE;
+    public static final int LENGTH_OF_MID_PHASE = 10;
+    public static final int END_PHASE_CALCULATOR = RELATIVE_TERRAIN_SCORE;
 
     public static final int SCORING_CALCULATOR = 4;
 

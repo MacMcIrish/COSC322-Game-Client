@@ -72,7 +72,7 @@ public class AmazonBoard implements Cloneable {
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
 
-                if (x == minX || x == maxX || y == minY || y == maxY)
+                if (x == minX || x == maxX || y == minY || y == maxY )//| x > 4 | y < 4 | y > 7)
                     board[y][x] = new AmazonSquare(x, y, AmazonSquare.PIECETYPE_ARROW);
                 else board[y][x] = new AmazonSquare(x, y, AmazonSquare.PIECETYPE_AVAILABLE);
 
